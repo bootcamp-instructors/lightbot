@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import {
     Row, Col, CardHeader, Card, CardImg, CardTitle, CardBody
 } from 'reactstrap'
-import { sections } from '../data/sections'
+import { sections } from '../data/sectionData'
 
 function Sections() {
     return (

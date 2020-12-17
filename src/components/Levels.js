@@ -3,8 +3,8 @@ import { Link, useParams } from 'react-router-dom'
 import {
     Row, Col, CardHeader, Card, CardImg, CardTitle, CardBody
 } from 'reactstrap'
-import { sections } from '../data/sections'
-import { levels } from '../data/levels'
+import { sections } from '../data/sectionData'
+import { levels } from '../data/levelData'
 function Levels() {
     const { sectionName } = useParams()
     const section = sections.find(section => section.name === sectionName)
@@ -18,7 +18,7 @@ function Levels() {
                     return (
                         <Link
                             className={`btn ${levelInProgress ? 'btn-primary' : 'btn-success'}`}
-                            to={`section/${sectionName}/${level.id}`}
+                            to={`/level/${sectionName}/${level.id}`}
                         >
                             {index + 1}
                         </Link>

@@ -21,7 +21,7 @@ function App() {
             <Route path="/section/:sectionName">
               <Levels />
             </Route>
-            <Route path="/section/:sectionName/:levelID">
+            <Route path="/level/:sectionName/:levelID">
               <LevelPage />
             </Route>
             <Route exact path="/">

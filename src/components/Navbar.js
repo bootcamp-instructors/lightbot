@@ -12,12 +12,10 @@ function Example() {
     const { pathname } = useLocation()
 
     console.log(pathname)
-    let renderLevelSelect = true
-    if (pathname === '/sections') {
-        renderLevelSelect = false
-    }
+    let renderLevelSelect = false
     let renderBack = true
     if (pathname === '/') {
+        renderLevelSelect = true
         renderBack = false
     }
     let inLevel = false
