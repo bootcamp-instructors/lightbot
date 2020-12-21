@@ -1,8 +1,6 @@
 
 import { Link, useParams } from 'react-router-dom'
-import {
-    Row, Col, CardHeader, Card, CardImg, CardTitle, CardBody
-} from 'reactstrap'
+import { Row, Col } from 'reactstrap'
 import { sections } from '../data/sectionData'
 import { levels } from '../data/levelData'
 function Levels() {
