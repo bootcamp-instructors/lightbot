@@ -6,6 +6,7 @@ import { levels } from '../data/levelData'
 function Levels() {
     const { sectionName } = useParams()
     const section = sections.find(section => section.name === sectionName)
+    console.log(section)
     const filteredLevels = levels.filter(level => level.section_id === section.id)
     return (
         <Row>
@@ -16,9 +17,10 @@ function Levels() {
                     return (
                         <Link
                             className={`btn ${levelInProgress ? 'btn-primary' : 'btn-success'}`}
-                            to={`/level/${sectionName}/${level.id}`}
+                            to={`/level/${sectionName}/${level.level_id}`}
+                            key={level.id}
                         >
-                            {index + 1}
+                            {level.level_id}
                         </Link>
                     )
                 }

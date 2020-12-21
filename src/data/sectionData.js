@@ -5,13 +5,13 @@ export const sections = [
         "img":"asset/url"
     },
     {
-        "id": 2,
+        "id": 1,
         "name": "Functions",
         "img":"asset/url"
     },
-    {
-        "id": 3,
-        "name": "Loops",
-        "img":"asset/url"
-    }
+    // {
+    //     "id": 2,
+    //     "name": "Loops",
+    //     "img":"asset/url"
+    // }
 ]

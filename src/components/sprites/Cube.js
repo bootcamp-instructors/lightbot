@@ -14,8 +14,8 @@ const scaleX = .5
 const scaleY = .5
 const width = 160
 const height = 80
-const pushX = 100
-const pushY = 100
+const pushX = 400
+const pushY = 200
 
 function Cube({ x = 0, y = 0, z = 0, handleClick, type = 'walk' }) {
 

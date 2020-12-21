@@ -6,7 +6,9 @@ import { levels } from '../data/levelData'
 
 function LevelPage() {
     const { sectionName, levelID } = useParams()
-    const foundLevel = levels.find(l => l.id === parseInt(levelID))
+    const section = sections.find(section => section.name === sectionName)
+
+    const foundLevel = levels.find(l => l.section_id === section.id && l.level_id === parseInt(levelID))
 
     const mappedLevel = !!foundLevel ? foundLevel.level_data.map((block, index) => {
         return block.z > 0
@@ -32,10 +34,15 @@ function LevelPage() {
     }) : []
     return (
         <div>
-            {sectionName} Section, Level {levelID + 1}
             <Stage width={window.innerWidth} height={window.innerHeight}>
                 <Layer>
-                    {mappedLevel.length > 0 ? mappedLevel : <Text text="Level not found" />}
+                    {mappedLevel.length > 0 ?
+                        <>
+                            <Text text={`${sectionName}, Level ${parseInt(levelID)}`} />
+                            {mappedLevel}
+                        </>
+                        : <Text text="Level not found" />
+                    }
                     {/* <Cube
                         x={0}
                         zPosition={0}
