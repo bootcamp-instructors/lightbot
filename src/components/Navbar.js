@@ -11,7 +11,6 @@ function Example() {
     const history = useHistory()
     const { pathname } = useLocation()
 
-    console.log(pathname)
     let renderLevelSelect = false
     let renderBack = true
     if (pathname === '/') {
@@ -19,9 +18,6 @@ function Example() {
         renderBack = false
     }
     let inLevel = false
-    // if (pathname.split('/').length > 3) {
-    //     inLevel = true
-    // }
 
     return (
         <Navbar color="light" light expand="md">

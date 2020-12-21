@@ -1,23 +1,7 @@
 import { Shape } from 'react-konva'
+import { width, height, scaleX, scaleY, pushX, pushY, colors } from '../constants'
 
-const colors = {
-    'darkGrey': "#363D44",
-    'grey': "#C2C2C2",
-    'lightGrey': "#D6D6D6",
-    'lighterGrey': '#E0E0E0',
-    'white': "#ffffff",
-    'blue': "#18BBF2",
-    'yellow': "#F8D525"
-}
-
-const scaleX = .5
-const scaleY = .5
-const width = 160
-const height = 80
-const pushX = 250
-const pushY = 200
-
-function Cube({ x = 0, y = 0, z = 0, handleClick, type = 'walk' }) {
+function Cube({ x = 0, y = 0, z = 0, handleClick, type = 'walk', renderRobot = false }) {
 
     const moveX = (x * .25) + (y * .25)
     const moveY = (x * .25) - (y * .25) - (z * .3)

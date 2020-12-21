@@ -6,7 +6,6 @@ import { levels } from '../data/levelData'
 function Levels() {
     const { sectionName } = useParams()
     const section = sections.find(section => section.name === sectionName)
-    console.log(section)
     const filteredLevels = levels.filter(level => level.section_id === section.id)
     return (
         <Row>
