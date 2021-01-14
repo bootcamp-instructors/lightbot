@@ -4,7 +4,7 @@ export const pushX = 250
 export const pushY = 200
 export const scaleX = .5
 export const scaleY = .5
-
+export const blockSize = 68
 export const colors = {
     'darkGrey': "#363D44",
     'grey': "#C2C2C2",
@@ -12,6 +12,7 @@ export const colors = {
     'lighterGrey': '#E0E0E0',
     'white': "#ffffff",
     'blue': "#18BBF2",
-    'yellow': "#F8D525"
+    'yellow': "#F8D525",
+    'lightYellow': "#FEEFA0"
 }
 
