@@ -9,6 +9,12 @@ import { levels } from '../data/levelData'
 import { colors, blockSize } from './constants'
 import { v4 as uuidv4 } from 'uuid';
 
+import {
+    useWindowSize,
+    useWindowWidth,
+    useWindowHeight,
+} from '@react-hook/window-size'
+
 
 function LevelPage() {
 
@@ -17,9 +23,9 @@ function LevelPage() {
 
     const foundLevel = levels.find(l => l.section_id === section.id && l.level_id === parseInt(levelID))
     const [robotLocation, setRobotLocation] = useState(foundLevel.renderRobot)
+    const [width, height] = useWindowSize()
 
-
-    const offsetX = 700;
+    const offsetX = width - 480;
     const offsetY = 20;
 
     // create Level ayers for robot
@@ -111,33 +117,32 @@ function LevelPage() {
         )
     }
     const mainGridData = { rows: 3, cols: 4, title: "Main", position: 0 }
-    const memoizedMainGrid = useMemo(() => createGridLayer(mainGridData), [sectionName, levelID, activeGridLayer])
+    const memoizedMainGrid = useMemo(() => createGridLayer(mainGridData),
+        [sectionName, levelID, activeGridLayer, width, height])
 
     const functionGridData = { rows: 2, cols: 4, title: "Function 1", position: 1 }
-    const memoizedFuncGrid = useMemo(() => createGridLayer(functionGridData), [sectionName, levelID, activeGridLayer])
-
+    const memoizedFuncGrid = useMemo(() => createGridLayer(functionGridData),
+        [sectionName, levelID, activeGridLayer, width, height])
     const [blocks, setBlocks] = useState([])
     const createNewBlock = (e, blockType) => {
         if (blocks.length >= 12) {
             console.log('too many blocks')
             return
         }
-
-
-        // calculate location for next block
-        const x = offsetX + ((blocks.length % 4) * blockSize)
-        const y = offsetY + (Math.floor(blocks.length / 4) * blockSize)
-        //figure out way to toggle which section we are placing block into
-        const areaType = 'main'
-        const id = uuidv4()
-        const order = blocks.length
-        const newBlock = { id, x, y, blockType, areaType, order }
-        console.log("creating new block id:", newBlock)
         // TODO: broken, need to fix this
-        setBlocks(prevBlocks => [...prevBlocks, newBlock])
+        setBlocks(prevBlocks => {
+            // calculate location for next block
+            const areaType = activeGridLayer
+            const x = offsetX + ((prevBlocks.length % 4) * blockSize)
+            const y = offsetY + (Math.floor(prevBlocks.length / 4) * blockSize)
+            const id = uuidv4()
+            const order = prevBlocks.length
+            const newBlock = { id, x, y, blockType, areaType, order }
+            console.log("creating new block id:", newBlock)
+            return [...prevBlocks, newBlock]
+        })
     }
     const createBlockSelection = (available_blocks) => {
-
         const blockSelection = available_blocks.map((block, index) => {
             return (
                 <Rect
@@ -165,6 +170,25 @@ function LevelPage() {
     const memoizedBlockSelection = useMemo(() => createBlockSelection(foundLevel.available_blocks), [foundLevel.available_blocks])
 
     // block related
+    const updateBlockLocation = (e, id, newX, newY) => {
+        const [items, item, index] = findBlock(e, id)
+        items[index] = {
+            ...item,
+            x: newX,
+            y: newY
+        };
+        setBlocks(items)
+    }
+
+    // block related
+    const findBlock = (e, id) => {
+        const items = [...blocks]
+        const item = items.find(i => i.id === id)
+        const index = items.indexOf(item)
+        return [items, item, index]
+    }
+
+    // block related
     const deleteSelf = (e, id) => {
         console.log("running deleteSelf on id:", id)
         const newBlocks = blocks.filter(obj => {
@@ -181,37 +205,36 @@ function LevelPage() {
     // TODO: fix this 
     // this function should bring any currently dragging element and put it on top
     const handleDragStart = (e, id) => {
-
-        const items = [...blocks]
-        const item = items.find(i => i.id === id)
-        const index = items.indexOf(item)
-        // remove from the list:
-        items.splice(index, 1)
-        // add to the top
-        items.push(item)
-        setBlocks(items)
+        // const [items, item, index] = findBlock(e, id)
+        // // remove from the list:
+        // items.splice(index, 1)
+        // // add to the top
+        // items.push(item)
+        // setBlocks(items)
     };
+
+    const handleDragEnd = (e, id) => {
+        // this code needs to be finished to update the blocks array when the drop happens
+        // updateBlockLocation(e, id, e.target.x(), e.target.y())
+        calculateDropLocation(e, id)
+    }
+
 
     // block related
     const calculateDropLocation = (e, id) => {
-        // this code needs to be finished to update the blocks array when the drop happens
-        // const items = [...blocks]
-        // const item = blocks.find(i => i.id === id);
-        // const index = blocks.indexOf(item);
-        // // update item position
-        // items[index] = {
-        //     ...item,
-        //     x: e.target.x(),
-        //     y: e.target.y()
-        // };
-        // setBlocks(items)
 
         // on every pick up of block, organize board
         organizeBoard()
 
         console.log("running calculateDropLocation on id:", id)
 
-        const bounds = {
+        const mainBounds = {
+            left: offsetX,
+            right: offsetX + (blockSize * 4),
+            top: offsetY,
+            bottom: offsetY + (blockSize * 3)
+        }
+        const funcBounds = {
             left: offsetX,
             right: offsetX + (blockSize * 4),
             top: offsetY,
@@ -222,10 +245,10 @@ function LevelPage() {
         const dropY = offsetY + Math.round(e.target.y() / blockSize) * blockSize
 
         // if drop location is out of bounds
-        if (((dropY + (blockSize / 2)) < bounds.top) ||
-            (dropY > (bounds.bottom + (blockSize / 2))) ||
-            ((dropX + (blockSize / 2)) < bounds.left) ||
-            (dropX > (bounds.right + (blockSize / 2)))
+        if (((dropY + (blockSize / 2)) < mainBounds.top) ||
+            (dropY > (mainBounds.bottom + (blockSize / 2))) ||
+            ((dropX + (blockSize / 2)) < mainBounds.left) ||
+            (dropX > (mainBounds.right + (blockSize / 2)))
         ) {
             deleteSelf(e, id)
         }
@@ -239,6 +262,7 @@ function LevelPage() {
                 x: lastBlockX,
                 y: lastBlockY
             });
+            updateBlockLocation(e, id, lastBlockX, lastBlockY)
 
             // if hover over existing block, replace block 
             // if hover in between existing blocks, place in between and move all blocks on the right, to the left
@@ -246,16 +270,12 @@ function LevelPage() {
             //     x: dropX,
             //     y: dropY
             // });
-
-
-
         }
     }
     // board related
     const resetBoard = (e) => {
         setBlocks([])
     }
-
     // board related
     const runCode = e => {
         console.log("running code")
@@ -263,7 +283,8 @@ function LevelPage() {
 
     return (
         <div className="p-2">
-            <Stage width={window.innerWidth} height={window.innerHeight}>
+
+            <Stage width={width - 200} height={height - 100}>
                 {memoizedLevel}
                 {memoizedMainGrid}
                 {foundLevel.section_id > 0 && memoizedFuncGrid}
@@ -278,6 +299,7 @@ function LevelPage() {
                         deleteSelf={deleteSelf}
                         calculateDropLocation={calculateDropLocation}
                         handleDragStart={handleDragStart}
+                        handleDragEnd={handleDragEnd}
                     />
                     )}
                     <Rect

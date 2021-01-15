@@ -6,8 +6,8 @@ export default function CodeBlock({
     areaType,
     blockType,
     deleteSelf,
-    handleDragStart,
-    calculateDropLocation
+    handleDragEnd,
+    handleDragStart
 }) {
     return (
         <Rect
@@ -22,8 +22,8 @@ export default function CodeBlock({
             strokeWidth={2}
             draggable
             onClick={e => deleteSelf(e, id)}
-            onDragEnd={e => calculateDropLocation(e, id)}
-            onDragStart={e => handleDragStart(e)}
+            onDragEnd={e => handleDragEnd(e, id)}
+            onDragStart={e => handleDragStart(e, id)}
 
         />
     )
