@@ -1,7 +1,7 @@
 import { Rect } from 'react-konva'
 import { colors, blockSize } from '../constants'
 export default function CodeBlock({
-    id, x, y, i,
+    id, x, y, key, i, j, index,
     order,
     areaType,
     blockType,
@@ -11,20 +11,19 @@ export default function CodeBlock({
 }) {
     return (
         <Rect
-            key={i}
+            key={index}
             x={x}
             y={y}
             name={id}
             width={blockSize}
             height={blockSize}
-            fill={colors.grey}
+            fill={blockType === "forward" ? colors.grey : colors.blue}
             stroke={colors.darkGrey}
             strokeWidth={2}
-            draggable
             onClick={e => deleteSelf(e, id)}
-            onDragEnd={e => handleDragEnd(e, id)}
-            onDragStart={e => handleDragStart(e, id)}
-
+        // draggable
+        // onDragEnd={e => handleDragEnd(e, id)}
+        // onDragStart={e => handleDragStart(e, id)}
         />
     )
 }

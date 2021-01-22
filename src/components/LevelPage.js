@@ -8,12 +8,7 @@ import { sections } from '../data/sectionData'
 import { levels } from '../data/levelData'
 import { colors, blockSize } from './constants'
 import { v4 as uuidv4 } from 'uuid';
-
-import {
-    useWindowSize,
-    useWindowWidth,
-    useWindowHeight,
-} from '@react-hook/window-size'
+import { useWindowSize } from '@react-hook/window-size'
 
 
 function LevelPage() {
@@ -27,8 +22,9 @@ function LevelPage() {
 
     const offsetX = width - 480;
     const offsetY = 20;
+    const [timeInterval, setTimeInterval] = useState(1000)
 
-    // create Level ayers for robot
+    // create Level layers for robot
     const renderLevel = () => {
         const renderedLevel = !!foundLevel ? foundLevel.level_data.map((block, index) => {
             return Array(block.z).fill().map((item, layer) => {
@@ -124,24 +120,32 @@ function LevelPage() {
     const memoizedFuncGrid = useMemo(() => createGridLayer(functionGridData),
         [sectionName, levelID, activeGridLayer, width, height])
     const [blocks, setBlocks] = useState([])
+    // block related
     const createNewBlock = (e, blockType) => {
-        if (blocks.length >= 12) {
-            console.log('too many blocks')
-            return
-        }
+
         // TODO: broken, need to fix this
         setBlocks(prevBlocks => {
+            if (prevBlocks.length >= 12) {
+                console.log('too many blocks')
+                return prevBlocks
+            }
             // calculate location for next block
             const areaType = activeGridLayer
-            const x = offsetX + ((prevBlocks.length % 4) * blockSize)
-            const y = offsetY + (Math.floor(prevBlocks.length / 4) * blockSize)
+            const i = (prevBlocks.length % 4)
+            const j = Math.floor(prevBlocks.length / 4)
             const id = uuidv4()
             const order = prevBlocks.length
-            const newBlock = { id, x, y, blockType, areaType, order }
+            const newBlock = { id, i, j, blockType, areaType, order }
             console.log("creating new block id:", newBlock)
             return [...prevBlocks, newBlock]
         })
     }
+    // block x,y,i,j calculation
+    const calcX = i => offsetX + (i * blockSize)
+    const calcY = j => offsetY + (j * blockSize)
+    const calcI = x => (x - offsetX) / blockSize
+    const calcJ = y => (y - offsetY) / blockSize
+
     const createBlockSelection = (available_blocks) => {
         const blockSelection = available_blocks.map((block, index) => {
             return (
@@ -154,6 +158,8 @@ function LevelPage() {
                     fill={colors.grey}
                     strokeWidth={2}
                     stroke={"black"}
+                // handleDragStart={e=>createNewBlockInMotion(e, block)}
+                // handleDragEnd={e=>handleDragEnd(e,)}
                 />
             )
         })
@@ -168,63 +174,38 @@ function LevelPage() {
         )
     }
     const memoizedBlockSelection = useMemo(() => createBlockSelection(foundLevel.available_blocks), [foundLevel.available_blocks])
-
-    // block related
+    // drag block related
     const updateBlockLocation = (e, id, newX, newY) => {
         const [items, item, index] = findBlock(e, id)
         items[index] = {
             ...item,
-            x: newX,
-            y: newY
+            i: calcI(newX),
+            j: calcJ(newY)
         };
         setBlocks(items)
     }
-
-    // block related
-    const findBlock = (e, id) => {
-        const items = [...blocks]
-        const item = items.find(i => i.id === id)
-        const index = items.indexOf(item)
-        return [items, item, index]
-    }
-
-    // block related
-    const deleteSelf = (e, id) => {
-        console.log("running deleteSelf on id:", id)
-        const newBlocks = blocks.filter(obj => {
-            return obj.id !== id;
-        })
-        setBlocks(newBlocks)
-    }
-    // board related
-    const organizeBoard = () => {
-        // confirm all blocks fit in screen correctly
-        console.log("running organizeBoard")
-    }
-    // block related
-    // TODO: fix this 
-    // this function should bring any currently dragging element and put it on top
+    // drag block related
     const handleDragStart = (e, id) => {
+        // TODO: this function should bring any currently dragging element and put it on top
         // const [items, item, index] = findBlock(e, id)
         // // remove from the list:
         // items.splice(index, 1)
         // // add to the top
         // items.push(item)
         // setBlocks(items)
-    };
 
+
+        // on every pick up of block, organize board
+        organizeBoard(e, id)
+    }
+    // drag block related
     const handleDragEnd = (e, id) => {
         // this code needs to be finished to update the blocks array when the drop happens
         // updateBlockLocation(e, id, e.target.x(), e.target.y())
         calculateDropLocation(e, id)
     }
-
-
-    // block related
+    // drag block related
     const calculateDropLocation = (e, id) => {
-
-        // on every pick up of block, organize board
-        organizeBoard()
 
         console.log("running calculateDropLocation on id:", id)
 
@@ -272,30 +253,125 @@ function LevelPage() {
             // });
         }
     }
+    // block related
+    const findBlock = (e, id) => {
+        const items = [...blocks]
+        const item = items.find(i => i.id === id)
+        const index = items.indexOf(item)
+        return [items, item, index]
+    }
+    // block related
+    const deleteSelf = (e, id) => {
+        organizeBoard(e, id)
+        setBlocks(prevBlocks => prevBlocks.filter(obj => obj.id !== id))
+    }
+    // board related
+    const organizeBoard = (e, id) => {
+        // confirm all blocks fit in screen correctly
+        setBlocks(prevBlocks => {
+            const currentBlock = prevBlocks.find(b => b.id === id)
+            let newBlockArray = []
+            let foundBlock = false
+            for (let b of prevBlocks) {
+                let newBlock = { ...b }
+                if (currentBlock.i === b.i && currentBlock.j === b.j) {
+                    foundBlock = true
+                    // dont do anything here
+                    newBlockArray.push(newBlock)
+                }
+                else if (foundBlock) {
+                    // shift blocks
+                    if (newBlock.i === 0) {
+                        newBlock.i = 3
+                        if (newBlock.j !== 0) {
+                            newBlock.j--
+                        }
+                    }
+                    else {
+                        newBlock.i--
+                    }
+                    newBlockArray.push(newBlock)
+                }
+                else {
+                    // have not found block yet
+                    newBlockArray.push(newBlock)
+                }
+                console.log(b.i, b.j)
+            }
+            return newBlockArray.sort((b1, b2) => b1.j - b2.j || b1.i - b2.i)
+
+        })
+
+    }
     // board related
     const resetBoard = (e) => {
         setBlocks([])
     }
     // board related
-    const runCode = e => {
-        console.log("running code")
+    const undoMove = (e) => {
+        setBlocks(prevBlocks => {
+            let newBlocks = [...prevBlocks]
+            const poppedBlock = newBlocks.pop()
+            // organizeBoard(e, poppedBlock.id)
+            console.log(newBlocks)
+            return newBlocks
+        })
     }
 
+    const updateRobotlocation = (block) => {
+        // TODO: finish this code
+        setRobotLocation(prevLocation => {
+            let currRobot = { ...prevLocation }//{ x: 0, y: 0, z: 1, angle: 0 }
+            // on turn, update angle
+            // on forward, update x or y based on angle
+            // on jump, update z and x or y based on angle and jumpable location
+            if (block.blockType === 'forward') {
+                switch (currRobot.angle) {
+                    case 0:
+                        currRobot.x++
+                        break
+                    case 120:
+                        currRobot.y++
+                        break
+                    case 180:
+                        currRobot.x--
+                        break
+                    case 300:
+                        currRobot.y--
+                        break
+                }
+            }
+            return currRobot
+        })
+    }
+    // board related
+    const runPlayerCode = e => {
+        console.log("running code")
+        for (let block of blocks) {
+            console.log(block)
+            setTimeout(() => updateRobotlocation(block), timeInterval)
+            // TODO: write checkSolution function
+            // if (checkSolution) {
+            //     break
+            // }
+        }
+    }
     return (
         <div className="p-2">
-
             <Stage width={width - 200} height={height - 100}>
                 {memoizedLevel}
                 {memoizedMainGrid}
                 {foundLevel.section_id > 0 && memoizedFuncGrid}
                 {memoizedBlockSelection}
 
-
                 {/* drag and drop blocks layer */}
                 <Layer>
-                    {blocks.map((b, i) => <CodeBlock
+                    {blocks.map((b, index) => <CodeBlock
                         {...b}
-                        i={i}
+                        x={calcX(b.i)}
+                        y={calcY(b.j)}
+                        key={index}
+                        index={index}
                         deleteSelf={deleteSelf}
                         calculateDropLocation={calculateDropLocation}
                         handleDragStart={handleDragStart}
@@ -311,8 +387,16 @@ function LevelPage() {
                         fill="red"
                     />
                     <Rect
-                        onClick={runCode}
+                        onClick={undoMove}
                         x={blockSize * 1}
+                        y={450 - blockSize - 10}
+                        width={blockSize}
+                        height={blockSize}
+                        fill="yellow"
+                    />
+                    <Rect
+                        onClick={runPlayerCode}
+                        x={blockSize * 2}
                         y={450 - blockSize - 10}
                         width={blockSize}
                         height={blockSize}
