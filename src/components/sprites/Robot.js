@@ -1,5 +1,5 @@
 import { Arrow } from 'react-konva'
-import { width, height, scaleX, scaleY, pushX, pushY, colors } from '../constants'
+import { width, height, scaleX, scaleY, pushX, pushY, colors } from '../../data'
 
 function Robot({ x = 0, y = 0, z = 0, angle = 0 }) {
     const moveX = (x * .25) + (y * .25)

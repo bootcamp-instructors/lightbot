@@ -1,5 +1,5 @@
 import { Shape } from 'react-konva'
-import { width, height, scaleX, scaleY, pushX, pushY, colors } from '../constants'
+import { width, height, scaleX, scaleY, pushX, pushY, colors } from '../../data'
 
 function Cube({ x = 0, y = 0, z = 0, handleClick, type = 'walk', renderRobot = false }) {
 

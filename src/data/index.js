@@ -15,4 +15,6 @@ export const colors = {
     'yellow': "#F8D525",
     'lightYellow': "#FEEFA0"
 }
+export const moveTypes = ['forward', 'light', 'left', 'right', 'jump', 'f1', 'f2']
+export const blockTypes = ['walk', 'light']
 

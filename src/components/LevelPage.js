@@ -6,27 +6,30 @@ import Cube from './sprites/Cube'
 import Robot from './sprites/Robot'
 import { sections } from '../data/sectionData'
 import { levels } from '../data/levelData'
-import { colors, blockSize } from './constants'
+import { colors, blockSize, moveTypes } from '../data'
 import { v4 as uuidv4 } from 'uuid';
 import { useWindowSize } from '@react-hook/window-size'
 
-
 function LevelPage() {
-
+    // TODO: abstract each component to a new file
     const { sectionName, levelID } = useParams()
     const section = sections.find(section => section.name === sectionName)
-
     const foundLevel = levels.find(l => l.section_id === section.id && l.level_id === parseInt(levelID))
+    const [levelData, setLevelData] = useState(!!foundLevel ? foundLevel.level_data : [])
+    const resetLevel = () => setLevelData(!!foundLevel ? foundLevel.level_data : [])
     const [robotLocation, setRobotLocation] = useState(foundLevel.renderRobot)
     const [width, height] = useWindowSize()
+    const resetRobot = () => {
+        setRobotLocation(foundLevel.renderRobot)
+    }
 
     const offsetX = width - 480;
     const offsetY = 20;
-    const [timeInterval, setTimeInterval] = useState(1000)
+    const [timeInterval, setTimeInterval] = useState(500)
 
     // create Level layers for robot
     const renderLevel = () => {
-        const renderedLevel = !!foundLevel ? foundLevel.level_data.map((block, index) => {
+        const renderedLevel = levelData.map((block, index) => {
             return Array(block.z).fill().map((item, layer) => {
                 return (
                     <Cube
@@ -39,7 +42,7 @@ function LevelPage() {
                     />
                 )
             })
-        }) : []
+        })
 
         return (
             <Layer>
@@ -54,7 +57,7 @@ function LevelPage() {
             </Layer>
         )
     }
-    const memoizedLevel = useMemo(renderLevel, [sectionName, levelID, robotLocation])
+    const memoizedLevel = useMemo(renderLevel, [sectionName, levelID, robotLocation, levelData])
 
     const [activeGridLayer, setActiveGridLayer] = useState(0)
     // create Grid Layers for block placement
@@ -155,7 +158,7 @@ function LevelPage() {
                     y={450}
                     width={blockSize}
                     height={blockSize}
-                    fill={colors.grey}
+                    fill={block === "forward" ? colors.grey : block === "light" ? colors.blue : colors.yellow}
                     strokeWidth={2}
                     stroke={"black"}
                 // handleDragStart={e=>createNewBlockInMotion(e, block)}
@@ -305,40 +308,145 @@ function LevelPage() {
     }
     // board related
     const resetBoard = (e) => {
+        resetRobot()
+        resetLevel()
         setBlocks([])
     }
     // board related
     const undoMove = (e) => {
+        resetRobot()
+        resetLevel()
         setBlocks(prevBlocks => {
             let newBlocks = [...prevBlocks]
-            const poppedBlock = newBlocks.pop()
-            // organizeBoard(e, poppedBlock.id)
-            console.log(newBlocks)
+            newBlocks.pop()
             return newBlocks
         })
     }
-
+    // robot related
+    const isLightable = ({ x, y, z }) => {
+        const currBlockIndex = levelData.findIndex(b => b.x === x && b.y === y && b.z === z)
+        if (levelData[currBlockIndex].type === moveTypes[1]) {
+            return currBlockIndex
+        }
+        return -1
+    }
+    // robot related
+    const canJump = ({ x, y, z }) => {
+        if (inRange({ x, y, z: z + 1 })) {
+            return 1
+        }
+        if (inRange({ x, y, z: z - 1 })) {
+            return -1
+        }
+        return 0
+    }
+    // robot related
+    const inRange = ({ x, y, z }) => {
+        // iterate through blocks and confirm newLocation is legal)
+        for (let block of levelData) {
+            if (block.x === x && block.y === y && block.z === z) {
+                return true
+            }
+        }
+        return false
+    }
+    // robot related
     const updateRobotlocation = (block) => {
         // TODO: finish this code
         setRobotLocation(prevLocation => {
-            let currRobot = { ...prevLocation }//{ x: 0, y: 0, z: 1, angle: 0 }
-            // on turn, update angle
-            // on forward, update x or y based on angle
-            // on jump, update z and x or y based on angle and jumpable location
-            if (block.blockType === 'forward') {
+            let currRobot = { ...prevLocation }//{ y 0, y: 0, z: 1, angle: 0 }
+            // on turn, update angle to face right
+            if (block.blockType === moveTypes[3]) {
                 switch (currRobot.angle) {
                     case 0:
-                        currRobot.x++
+                        currRobot.angle = 120
                         break
                     case 120:
-                        currRobot.y++
+                        currRobot.angle = 180
                         break
                     case 180:
-                        currRobot.x--
+                        currRobot.angle = 300
                         break
                     case 300:
-                        currRobot.y--
+                        currRobot.angle = 0
                         break
+                }
+            }
+            // on turn, update angle to face left
+            if (block.blockType === moveTypes[2]) {
+                switch (currRobot.angle) {
+                    case 0:
+                        currRobot.angle = 300
+                        break
+                    case 120:
+                        currRobot.angle = 0
+                        break
+                    case 180:
+                        currRobot.angle = 120
+                        break
+                    case 300:
+                        currRobot.angle = 180
+                        break
+                }
+            }
+            // on forward, update x or y based on angle
+            if (block.blockType === moveTypes[0]) {
+                // check if robot can indeed move forward here
+                if (currRobot.angle === 0 && inRange({ x: currRobot.x + 1, y: currRobot.y, z: currRobot.z })) {
+                    currRobot.x++
+                }
+                if (currRobot.angle === 120 && inRange({ x: currRobot.x, y: currRobot.y - 1, z: currRobot.z })) {
+                    currRobot.y--
+                }
+                if (currRobot.angle === 180 && inRange({ x: currRobot.x - 1, y: currRobot.y, z: currRobot.z })) {
+                    currRobot.x--
+                }
+                if (currRobot.angle === 300 && inRange({ x: currRobot.x, y: currRobot.y + 1, z: currRobot.z })) {
+                    currRobot.y++
+                }
+            }
+            // on jump, update z and x or y based on angle and jumpable location
+            if (block.blockType === moveTypes[4]) {
+                // check if robot can indeed move forward and jump up or down here
+
+                if (currRobot.angle === 0) {
+                    let jump = canJump({ x: currRobot.x + 1, y: currRobot.y, z: currRobot.z })
+                    if (jump !== 0) {
+                        currRobot.x++
+                        currRobot.z += jump
+                    }
+                }
+                if (currRobot.angle === 120) {
+                    let jump = canJump({ x: currRobot.x, y: currRobot.y - 1, z: currRobot.z })
+                    if (jump !== 0) {
+                        currRobot.y--
+                        currRobot.z += jump
+                    }
+                }
+                if (currRobot.angle === 180) {
+                    let jump = canJump({ x: currRobot.x - 1, y: currRobot.y, z: currRobot.z })
+                    if (jump !== 0) {
+                        currRobot.x--
+                        currRobot.z += jump
+                    }
+                }
+                if (currRobot.angle === 300) {
+                    let jump = canJump({ x: currRobot.x, y: currRobot.y + 1, z: currRobot.z })
+                    if (jump !== 0) {
+                        currRobot.y++
+                        currRobot.z += jump
+                    }
+                }
+            }
+            // on light, toggle powered value
+            if (block.blockType === moveTypes[1]) {
+                let index = isLightable({ x: currRobot.x, y: currRobot.y, z: currRobot.z })
+                if (index >= 0) {
+                    setLevelData(prevLevelData => {
+                        let newLevelData = [...prevLevelData]
+                        newLevelData[index].powered = !newLevelData[index].powered
+                        return newLevelData
+                    })
                 }
             }
             return currRobot
@@ -346,15 +454,23 @@ function LevelPage() {
     }
     // board related
     const runPlayerCode = e => {
+        resetRobot()
+        resetLevel()
         console.log("running code")
-        for (let block of blocks) {
-            console.log(block)
-            setTimeout(() => updateRobotlocation(block), timeInterval)
+
+        let i = 0
+        let checkingGame = setInterval(() => {
+            console.log(blocks[i])
+            updateRobotlocation(blocks[i])
+            i++
             // TODO: write checkSolution function
             // if (checkSolution) {
             //     break
             // }
-        }
+            if (i >= blocks.length) {
+                clearInterval(checkingGame);
+            }
+        }, timeInterval)
     }
     return (
         <div className="p-2">

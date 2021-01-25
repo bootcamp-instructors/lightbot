@@ -1,14 +1,21 @@
 import { Rect } from 'react-konva'
-import { colors, blockSize } from '../constants'
+import { colors, blockSize } from '../../data'
 export default function CodeBlock({
     id, x, y, key, i, j, index,
     order,
+    powered = false,
     areaType,
     blockType,
     deleteSelf,
     handleDragEnd,
     handleDragStart
 }) {
+    const colorPicker = () => {
+        if (blockType === "light") {
+            return !powered ? colors.blue : colors.yellow
+        }
+        return colors.grey
+    }
     return (
         <Rect
             key={index}
@@ -17,7 +24,7 @@ export default function CodeBlock({
             name={id}
             width={blockSize}
             height={blockSize}
-            fill={blockType === "forward" ? colors.grey : colors.blue}
+            fill={colorPicker()}
             stroke={colors.darkGrey}
             strokeWidth={2}
             onClick={e => deleteSelf(e, id)}
