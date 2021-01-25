@@ -1,11 +1,17 @@
 import { Shape } from 'react-konva'
 import { width, height, scaleX, scaleY, pushX, pushY, colors } from '../../data'
 
-function Cube({ x = 0, y = 0, z = 0, handleClick, type = 'walk', renderRobot = false }) {
+function Cube({ x = 0, y = 0, z = 0, handleClick, powered = false, type = 'walk', renderRobot = false }) {
 
     const moveX = (x * .25) + (y * .25)
     const moveY = (x * .25) - (y * .25) - (z * .3)
 
+    const colorPicker = () => {
+        if (type === "light") {
+            return powered ? colors.yellow : colors.blue
+        }
+        return colors.lighterGrey
+    }
     return (
         <>
             <Shape
@@ -26,7 +32,7 @@ function Cube({ x = 0, y = 0, z = 0, handleClick, type = 'walk', renderRobot = f
                     context.closePath();
                     context.fillStrokeShape(shape);
                 }}
-                fill={type === 'light' ? colors['blue'] : colors['lighterGrey']}
+                fill={colorPicker()}
                 stroke={colors['darkGrey']}
                 strokeWidth={2}
             />

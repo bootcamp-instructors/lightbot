@@ -4,40 +4,50 @@ import { Stage, Layer, Text, Rect, Line } from 'react-konva'
 import CodeBlock from './sprites/CodeBlock'
 import Cube from './sprites/Cube'
 import Robot from './sprites/Robot'
+import Modal from './Modal'
 import { sections } from '../data/sectionData'
 import { levels } from '../data/levelData'
-import { colors, blockSize, moveTypes } from '../data'
+import { colors, blockSize, moveTypes, blockTypes } from '../data'
 import { v4 as uuidv4 } from 'uuid';
 import { useWindowSize } from '@react-hook/window-size'
 
 function LevelPage() {
     // TODO: abstract each component to a new file
+    // modal related
+    const [modal, setModal] = useState(false);
+    const toggleModal = () => setModal(!modal);
+
     const { sectionName, levelID } = useParams()
     const section = sections.find(section => section.name === sectionName)
     const foundLevel = levels.find(l => l.section_id === section.id && l.level_id === parseInt(levelID))
     const [levelData, setLevelData] = useState(!!foundLevel ? foundLevel.level_data : [])
-    const resetLevel = () => setLevelData(!!foundLevel ? foundLevel.level_data : [])
+    const resetLevel = () => setLevelData(prevLevel => {
+        console.log('resetting board')
+        // TODO: bug - on reset of board, the colors dont go back to blue for the light tiles
+        // TODO: bug - continue in modal, the board does not re render and the blocks stay in the code pen
+
+        const correctData = !!foundLevel ? foundLevel.level_data : []
+        return [...correctData]
+    })
     const [robotLocation, setRobotLocation] = useState(foundLevel.renderRobot)
     const [width, height] = useWindowSize()
-    const resetRobot = () => {
-        setRobotLocation(foundLevel.renderRobot)
-    }
-
+    const resetRobot = () => setRobotLocation(foundLevel.renderRobot)
     const offsetX = width - 480;
     const offsetY = 20;
     const [timeInterval, setTimeInterval] = useState(500)
-
     // create Level layers for robot
     const renderLevel = () => {
         const renderedLevel = levelData.map((block, index) => {
             return Array(block.z).fill().map((item, layer) => {
                 return (
                     <Cube
+                        {...block}
                         x={block.x}
                         y={block.y}
                         z={layer}
                         // update block color if robot lights correct block
                         type={block.type}
+
                         key={layer}
                     />
                 )
@@ -58,7 +68,6 @@ function LevelPage() {
         )
     }
     const memoizedLevel = useMemo(renderLevel, [sectionName, levelID, robotLocation, levelData])
-
     const [activeGridLayer, setActiveGridLayer] = useState(0)
     // create Grid Layers for block placement
     const createGridLayer = props => {
@@ -118,14 +127,14 @@ function LevelPage() {
     const mainGridData = { rows: 3, cols: 4, title: "Main", position: 0 }
     const memoizedMainGrid = useMemo(() => createGridLayer(mainGridData),
         [sectionName, levelID, activeGridLayer, width, height])
-
     const functionGridData = { rows: 2, cols: 4, title: "Function 1", position: 1 }
     const memoizedFuncGrid = useMemo(() => createGridLayer(functionGridData),
         [sectionName, levelID, activeGridLayer, width, height])
     const [blocks, setBlocks] = useState([])
     // block related
     const createNewBlock = (e, blockType) => {
-
+        resetRobot()
+        resetLevel()
         // TODO: broken, need to fix this
         setBlocks(prevBlocks => {
             if (prevBlocks.length >= 12) {
@@ -139,7 +148,6 @@ function LevelPage() {
             const id = uuidv4()
             const order = prevBlocks.length
             const newBlock = { id, i, j, blockType, areaType, order }
-            console.log("creating new block id:", newBlock)
             return [...prevBlocks, newBlock]
         })
     }
@@ -148,7 +156,6 @@ function LevelPage() {
     const calcY = j => offsetY + (j * blockSize)
     const calcI = x => (x - offsetX) / blockSize
     const calcJ = y => (y - offsetY) / blockSize
-
     const createBlockSelection = (available_blocks) => {
         const blockSelection = available_blocks.map((block, index) => {
             return (
@@ -209,9 +216,6 @@ function LevelPage() {
     }
     // drag block related
     const calculateDropLocation = (e, id) => {
-
-        console.log("running calculateDropLocation on id:", id)
-
         const mainBounds = {
             left: offsetX,
             right: offsetX + (blockSize * 4),
@@ -265,6 +269,8 @@ function LevelPage() {
     }
     // block related
     const deleteSelf = (e, id) => {
+        resetRobot()
+        resetLevel()
         organizeBoard(e, id)
         setBlocks(prevBlocks => prevBlocks.filter(obj => obj.id !== id))
     }
@@ -299,7 +305,6 @@ function LevelPage() {
                     // have not found block yet
                     newBlockArray.push(newBlock)
                 }
-                console.log(b.i, b.j)
             }
             return newBlockArray.sort((b1, b2) => b1.j - b2.j || b1.i - b2.i)
 
@@ -324,7 +329,11 @@ function LevelPage() {
     }
     // robot related
     const isLightable = ({ x, y, z }) => {
-        const currBlockIndex = levelData.findIndex(b => b.x === x && b.y === y && b.z === z)
+        const currBlockIndex = levelData.findIndex(b => {
+            if (b.x === x && b.y === y && b.z === z) {
+                return b
+            }
+        })
         if (levelData[currBlockIndex].type === moveTypes[1]) {
             return currBlockIndex
         }
@@ -349,6 +358,10 @@ function LevelPage() {
             }
         }
         return false
+    }
+    const redo = (e) => {
+        resetBoard(e)
+        toggleModal()
     }
     // robot related
     const updateRobotlocation = (block) => {
@@ -452,23 +465,32 @@ function LevelPage() {
             return currRobot
         })
     }
+    const checkSolution = () => {
+        for (let block of levelData) {
+            if (block.type === blockTypes[1]) {
+                if (!block.powered) {
+                    return false
+                }
+            }
+        }
+        // if we arrived here, the player has solved the level
+        // pop up modal, telling user that the player has successfully completed the level, to move on to the next level or to redo level
+        toggleModal()
+        // ask the user if they can refactor their solution to use less blocks if they used more than min needed
+        return true
+    }
     // board related
     const runPlayerCode = e => {
         resetRobot()
         resetLevel()
-        console.log("running code")
-
         let i = 0
         let checkingGame = setInterval(() => {
-            console.log(blocks[i])
-            updateRobotlocation(blocks[i])
-            i++
-            // TODO: write checkSolution function
-            // if (checkSolution) {
-            //     break
-            // }
-            if (i >= blocks.length) {
-                clearInterval(checkingGame);
+            if (blocks.length > 0) {
+                updateRobotlocation(blocks[i])
+                i++
+                if (checkSolution() || i >= blocks.length) {
+                    clearInterval(checkingGame);
+                }
             }
         }, timeInterval)
     }
@@ -520,6 +542,7 @@ function LevelPage() {
                     />
                 </Layer>
             </Stage>
+            <Modal modal={modal} toggle={toggleModal} redo={redo} levelInfo={foundLevel} />
         </div>
     )
 }

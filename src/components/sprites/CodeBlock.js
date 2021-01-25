@@ -12,7 +12,9 @@ export default function CodeBlock({
 }) {
     const colorPicker = () => {
         if (blockType === "light") {
-            return !powered ? colors.blue : colors.yellow
+            let picked = powered ? colors.yellow : colors.blue
+            console.log(picked)
+            return picked
         }
         return colors.grey
     }
