@@ -11,7 +11,7 @@ import { colors, blockSize, moveTypes, blockTypes } from '../data'
 import { v4 as uuidv4 } from 'uuid';
 import { useWindowSize } from '@react-hook/window-size'
 
-function LevelPage() {
+function Game() {
     // TODO: abstract each component to a new file
     // modal related
     const [modal, setModal] = useState(false);
@@ -547,4 +547,4 @@ function LevelPage() {
     )
 }
 
-export default LevelPage
+export default Game

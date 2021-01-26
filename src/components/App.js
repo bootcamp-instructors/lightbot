@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import { Container } from 'reactstrap'
 import Sections from './Sections'
 import Levels from './Levels'
-import LevelPage from './LevelPage'
+import Game from './Game'
 import Home from './Home'
 import Navbar from './Navbar'
 import Footer from './Footer'
@@ -22,7 +22,7 @@ function App() {
               <Levels />
             </Route>
             <Route path="/level/:sectionName/:levelID">
-              <LevelPage />
+              <Game />
             </Route>
             <Route exact path="/">
               <Home />
