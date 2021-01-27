@@ -1,4 +1,4 @@
-import { useState, useMemo, Fragment } from 'react'
+import { useState, useMemo, Fragment, useEffect } from 'react'
 import { useParams, Redirect } from 'react-router-dom'
 import { Stage, Layer, Text, Rect, Line } from 'react-konva'
 import CodeBlock from './sprites/CodeBlock'
@@ -74,6 +74,7 @@ function Game() {
             </Layer>
         )
     }
+    const YgridHeight = 2 * blockSize;
     const memoizedLevel = useMemo(renderLevel, [robotLocation, levelData])
     const [activeGridLayer, setActiveGridLayer] = useState(0)
     // create Grid Layers for block placement
@@ -112,7 +113,7 @@ function Game() {
             />)
         }
         return (
-            <Layer onClick={e => setActiveGridLayer(position)}>
+            <Layer onClick={e => setActiveGridLayer(prev => position)}>
                 <Rect
                     x={offsetX - 10}
                     y={(position * (gridHeight + 110)) + offsetY - 20}
@@ -143,7 +144,6 @@ function Game() {
         resetRobot()
         resetLevel()
         // TODO: broken, need to fix this
-        //  TODO: add func 1 blocks
         if (activeGridLayer === 0) {
             setMainBlocks(prevMainBlocks => {
                 if (prevMainBlocks.length >= 12) {
@@ -151,10 +151,10 @@ function Game() {
                     return prevMainBlocks
                 }
                 // calculate location for next block
-                const areaType = activeGridLayer
+                const id = uuidv4()
                 const i = (prevMainBlocks.length % 4)
                 const j = Math.floor(prevMainBlocks.length / 4)
-                const id = uuidv4()
+                const areaType = activeGridLayer
                 const order = prevMainBlocks.length
                 const newBlock = { id, i, j, blockType, areaType, order }
                 return [...prevMainBlocks, newBlock]
@@ -162,15 +162,20 @@ function Game() {
         }
         else if (activeGridLayer === 1) {
             setFunc1Blocks(prevFunc1Blocks => {
-                if (prevFunc1Blocks.length >= 12) {
+                if (prevFunc1Blocks.length >= 8) {
                     console.log('too many blocks')
                     return prevFunc1Blocks
                 }
+                if (blockType === 'f1') {
+                    console.log('block not allowed')
+                    return prevFunc1Blocks
+                }
+
                 // calculate location for next block
-                const areaType = activeGridLayer
+                const id = uuidv4()
                 const i = (prevFunc1Blocks.length % 4)
                 const j = Math.floor(prevFunc1Blocks.length / 4)
-                const id = uuidv4()
+                const areaType = activeGridLayer
                 const order = prevFunc1Blocks.length
                 const newBlock = { id, i, j, blockType, areaType, order }
                 return [...prevFunc1Blocks, newBlock]
@@ -179,9 +184,9 @@ function Game() {
     }
     // block x,y,i,j calculation
     const calcX = (i) => offsetX + (i * blockSize)
-    const calcY = (j,p) => offsetY + (j * blockSize) + (p * j + 110)
-    const calcI = (x) => (x - offsetX) / blockSize
-    const calcJ = (y,p) => (y - offsetY) / blockSize + (p * j+ 110)
+    const calcY = (j, p) => offsetY + (j * blockSize) + (p * (YgridHeight + 110))
+    // const calcI = (x) => (x - offsetX) / blockSize
+    // const calcJ = (y, p) => (y - offsetY) / blockSize // + (p * y+ 110)
     const Y_Block_selectOffsetRename = 450
     const createMoveSelection = (available_moves) => {
         const moveSelection = available_moves.map((move, index) => {
@@ -251,90 +256,90 @@ function Game() {
             </Layer>
         )
     }
-    const memoizedMoveSelection = useMemo(() => createMoveSelection(!!foundLevel ? foundLevel.available_moves : []), [sectionName, levelID])
+    const memoizedMoveSelection = useMemo(() => createMoveSelection(!!foundLevel ? foundLevel.available_moves : []), [sectionName, levelID, activeGridLayer])
     // drag block related
-    const updateBlockLocation = (e, id, newX, newY) => {
-        const [items, item, index] = findBlock(e, id)
-        items[index] = {
-            ...item,
-            i: calcI(newX),
-            j: calcJ(newY)
-        };
-        setMainBlocks(prev => items)
-    }
+    // const updateBlockLocation = (e, id, newX, newY) => {
+    //     const [items, item, index] = findBlock(e, id)
+    //     items[index] = {
+    //         ...item,
+    //         i: calcI(newX),
+    //         j: calcJ(newY)
+    //     };
+    //     setMainBlocks(prev => items)
+    // }
     // drag block related
-    const handleDragStart = (e, id) => {
-        // TODO: this function should bring any currently dragging element and put it on top
-        // const [items, item, index] = findBlock(e, id)
-        // // remove from the list:
-        // items.splice(index, 1)
-        // // add to the top
-        // items.push(item)
-        // setMainBlocks(items)
+    // const handleDragStart = (e, id) => {
+    //     // TODO: this function should bring any currently dragging element and put it on top
+    //     // const [items, item, index] = findBlock(e, id)
+    //     // // remove from the list:
+    //     // items.splice(index, 1)
+    //     // // add to the top
+    //     // items.push(item)
+    //     // setMainBlocks(items)
 
 
-        // on every pick up of block, organize board
-        organizeBoard(e, id)
-    }
+    //     // on every pick up of block, organize board
+    //     organizeBoard(e, id)
+    // }
     // drag block related
-    const handleDragEnd = (e, id) => {
-        // this code needs to be finished to update the blocks array when the drop happens
-        // updateBlockLocation(e, id, e.target.x(), e.target.y())
-        calculateDropLocation(e, id)
-    }
+    // const handleDragEnd = (e, id) => {
+    //     // this code needs to be finished to update the blocks array when the drop happens
+    //     // updateBlockLocation(e, id, e.target.x(), e.target.y())
+    //     calculateDropLocation(e, id)
+    // }
     // drag block related
-    const calculateDropLocation = (e, id) => {
-        const mainBounds = {
-            left: offsetX,
-            right: offsetX + (blockSize * 4),
-            top: offsetY,
-            bottom: offsetY + (blockSize * 3)
-        }
-        const funcBounds = {
-            left: offsetX,
-            right: offsetX + (blockSize * 4),
-            top: offsetY,
-            bottom: offsetY + (blockSize * 3)
-        }
+    // const calculateDropLocation = (e, id) => {
+    //     const mainBounds = {
+    //         left: offsetX,
+    //         right: offsetX + (blockSize * 4),
+    //         top: offsetY,
+    //         bottom: offsetY + (blockSize * 3)
+    //     }
+    //     const funcBounds = {
+    //         left: offsetX,
+    //         right: offsetX + (blockSize * 4),
+    //         top: offsetY,
+    //         bottom: offsetY + (blockSize * 3)
+    //     }
 
-        const dropX = (offsetX % 68) + Math.round(e.target.x() / blockSize) * blockSize
-        const dropY = offsetY + Math.round(e.target.y() / blockSize) * blockSize
+    //     const dropX = (offsetX % 68) + Math.round(e.target.x() / blockSize) * blockSize
+    //     const dropY = offsetY + Math.round(e.target.y() / blockSize) * blockSize
 
-        // if drop location is out of bounds
-        if (((dropY + (blockSize / 2)) < mainBounds.top) ||
-            (dropY > (mainBounds.bottom + (blockSize / 2))) ||
-            ((dropX + (blockSize / 2)) < mainBounds.left) ||
-            (dropX > (mainBounds.right + (blockSize / 2)))
-        ) {
-            deleteSelf(e, id)
-        }
-        else {
-            // move block to new location
+    //     // if drop location is out of bounds
+    //     if (((dropY + (blockSize / 2)) < mainBounds.top) ||
+    //         (dropY > (mainBounds.bottom + (blockSize / 2))) ||
+    //         ((dropX + (blockSize / 2)) < mainBounds.left) ||
+    //         (dropX > (mainBounds.right + (blockSize / 2)))
+    //     ) {
+    //         deleteSelf(e, id)
+    //     }
+    //     else {
+    //         // move block to new location
 
-            // if hover over no blocks, place block at the end of all the blocks
-            const lastBlockX = ((mainBlocks.length - 1) % 4) * blockSize + offsetX
-            const lastBlockY = Math.floor((mainBlocks.length - 1) / 4) * blockSize + offsetY
-            e.target.to({
-                x: lastBlockX,
-                y: lastBlockY
-            });
-            updateBlockLocation(e, id, lastBlockX, lastBlockY)
+    //         // if hover over no blocks, place block at the end of all the blocks
+    //         const lastBlockX = ((mainBlocks.length - 1) % 4) * blockSize + offsetX
+    //         const lastBlockY = Math.floor((mainBlocks.length - 1) / 4) * blockSize + offsetY
+    //         e.target.to({
+    //             x: lastBlockX,
+    //             y: lastBlockY
+    //         });
+    //         updateBlockLocation(e, id, lastBlockX, lastBlockY)
 
-            // if hover over existing block, replace block 
-            // if hover in between existing blocks, place in between and move all blocks on the right, to the left
-            // e.target.to({
-            //     x: dropX,
-            //     y: dropY
-            // });
-        }
-    }
+    //         // if hover over existing block, replace block 
+    //         // if hover in between existing blocks, place in between and move all blocks on the right, to the left
+    //         // e.target.to({
+    //         //     x: dropX,
+    //         //     y: dropY
+    //         // });
+    //     }
+    // }
     // block related
-    const findBlock = (e, id) => {
-        const items = [...mainBlocks]
-        const item = items.find(i => i.id === id)
-        const index = items.indexOf(item)
-        return [items, item, index]
-    }
+    // const findBlock = (e, id) => {
+    //     const items = [...mainBlocks]
+    //     const item = items.find(i => i.id === id)
+    //     const index = items.indexOf(item)
+    //     return [items, item, index]
+    // }
     // block related
     const deleteSelf = (e, id) => {
         resetRobot()
@@ -604,13 +609,50 @@ function Game() {
         resetRobot()
         resetLevel()
         let i = 0
-        let checkingGame = setInterval(() => {
-            if (mainBlocks.length > 0) {
-                updateRobotlocation(mainBlocks[i])
-                i++
-                if (checkSolution() || i >= mainBlocks.length) {
-                    clearInterval(checkingGame);
+        let runningFunc1 = false
+        const runFunc1Code = () => {
+            let j = 0
+            let checkingFunc1Code = setInterval(() => {
+                if (func1Blocks.length > 0 && j < func1Blocks.length) {
+                    if (func1Blocks[j].blockType === 'f1') {
+                        runFunc1Code()
+                    }
+                    else {
+                        updateRobotlocation(func1Blocks[j])
+                        j++
+                    }
+                    if (checkSolution() || j >= func1Blocks.length) {
+                        i++
+                        runningFunc1 = false
+                        clearInterval(checkingFunc1Code);
+                    }
                 }
+                else {
+                    i++
+                    runningFunc1 = false
+                    clearInterval(checkingFunc1Code);
+                }
+            }, timeInterval)
+        }
+
+        let checkingMainCode = setInterval(() => {
+            console.log(i)
+            if (mainBlocks.length > 0 && i < mainBlocks.length) {
+                if (mainBlocks[i].blockType === 'f1' && !runningFunc1) {
+                    runningFunc1 = true
+                    runFunc1Code()
+                }
+                else if (mainBlocks[i].blockType !== 'f1') {
+                    updateRobotlocation(mainBlocks[i])
+                    i++
+                }
+                if (checkSolution() || i >= mainBlocks.length) {
+                    clearInterval(checkingMainCode);
+                }
+            }
+            else {
+                clearInterval(checkingMainCode);
+                checkSolution()
             }
         }, timeInterval)
     }
@@ -628,25 +670,25 @@ function Game() {
                             {mainBlocks.map((b, index) => <CodeBlock
                                 {...b}
                                 x={calcX(b.i)}
-                                y={calcY(b.j)}
+                                y={calcY(b.j, b.areaType)}
                                 key={index}
                                 index={index}
                                 deleteSelf={deleteSelf}
-                                calculateDropLocation={calculateDropLocation}
-                                handleDragStart={handleDragStart}
-                                handleDragEnd={handleDragEnd}
+                            // calculateDropLocation={calculateDropLocation}
+                            // handleDragStart={handleDragStart}
+                            // handleDragEnd={handleDragEnd}
                             />
                             )}
                             {func1Blocks.map((b, index) => <CodeBlock
                                 {...b}
                                 x={calcX(b.i)}
-                                y={calcY(b.j)}
+                                y={calcY(b.j, b.areaType)}
                                 key={index}
                                 index={index}
                                 deleteSelf={deleteSelf}
-                                calculateDropLocation={calculateDropLocation}
-                                handleDragStart={handleDragStart}
-                                handleDragEnd={handleDragEnd}
+                            // calculateDropLocation={calculateDropLocation}
+                            // handleDragStart={handleDragStart}
+                            // handleDragEnd={handleDragEnd}
                             />
                             )}
                             <Rect
