@@ -9,10 +9,6 @@ const ModalExample = ({ levelInfo, modal, toggle, redo, buttonLabel, className }
     const currLevel = levels.find(level => level.id === levelInfo.id)
 
     const nextLevelPath = () => {
-        console.log(currLevel.id)
-        console.log(levels.length)
-
-
         if (currLevel.id + 1 < levels.length) {
             let nextLevel = levels[currLevel.id + 1]
             let nextSection = sections.find(s => s.id === nextLevel.section_id)
@@ -22,12 +18,12 @@ const ModalExample = ({ levelInfo, modal, toggle, redo, buttonLabel, className }
     }
 
     const nextLevelAvaliable = nextLevelPath()
-    console.log(nextLevelAvaliable)
 
     const history = useHistory()
 
     const nextLevel = () => {
         toggle()
+        redo()
         history.push(nextLevelAvaliable)
     }
 
