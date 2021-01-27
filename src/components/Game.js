@@ -699,6 +699,13 @@ function Game() {
                                 height={blockSize}
                                 fill="red"
                             />
+                            <Text
+                                onClick={resetBoard}
+                                fontSize={25}
+                                x={blockSize * 0}
+                                y={450 - blockSize - 10}
+                                text={"reset"}
+                            />
                             <Rect
                                 onClick={undoMove}
                                 x={blockSize * 1}
@@ -706,6 +713,13 @@ function Game() {
                                 width={blockSize}
                                 height={blockSize}
                                 fill="yellow"
+                            />
+                            <Text
+                                onClick={undoMove}
+                                x={blockSize * 1}
+                                y={450 - blockSize - 10}
+                                fontSize={25}
+                                text={"undo"}
                             />
                             <Rect
                                 onClick={runPlayerCode}
@@ -715,6 +729,13 @@ function Game() {
                                 height={blockSize}
                                 fill="green"
                             />
+                            <Text
+                                onClick={runPlayerCode}
+                                x={blockSize * 2}
+                                y={450 - blockSize - 10}
+                                fontSize={25}
+                                text={"run"}
+                            />
                             <Rect
                                 onClick={updateTimeInterval}
                                 x={blockSize * 3}
@@ -722,6 +743,13 @@ function Game() {
                                 width={blockSize}
                                 height={blockSize}
                                 fill="purple"
+                            />
+                            <Text
+                                onClick={updateTimeInterval}
+                                x={blockSize * 3}
+                                y={450 - blockSize - 10}
+                                fontSize={25}
+                                text={timeInterval === 500 ? "fast" : "slow"}
                             />
                         </Layer>
                     </Stage>
