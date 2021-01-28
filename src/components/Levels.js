@@ -12,7 +12,8 @@ function Levels() {
             <Col>
                 {filteredLevels.map((level, index) => {
                     const levelInProgress = true
-                    // check context to see if level in progress based on user
+                    // TODO: check context to see if level in progress based on user
+                    // TODO: make sure buttons do not touch
                     return (
                         <Link
                             className={`btn ${levelInProgress ? 'btn-primary' : 'btn-success'}`}

@@ -15,9 +15,15 @@ import LeftBlock from './sprites/LeftBlock'
 import RightBlock from './sprites/RightBlock'
 import LightBlock from './sprites/LightBlock'
 import SpringBlock from './sprites/SpringBlock'
+import { useAppContext } from '../utilities/AppContext'
 
 function Game() {
+    const { screenWidth } = useAppContext()
+    // TODO: check context to see if level completed already
+    const [width, height] = useWindowSize()
 
+    const offsetX = (width * screenWidth) - 480;
+    const offsetY = 20;
     // TODO: abstract each component to a new file
     // modal related
     const [modal, setModal] = useState(false);
@@ -37,10 +43,8 @@ function Game() {
         return [...correctData]
     })
     const [robotLocation, setRobotLocation] = useState(!!foundLevel ? foundLevel.renderRobot : {})
-    const [width, height] = useWindowSize()
+
     const resetRobot = () => setRobotLocation(!!foundLevel ? foundLevel.renderRobot : {})
-    const offsetX = width - 480;
-    const offsetY = 20;
     const [timeInterval, setTimeInterval] = useState(500)
     const updateTimeInterval = () => setTimeInterval(pTime => pTime === 500 ? 250 : 500)
     // create Level layers for robot
@@ -50,8 +54,8 @@ function Game() {
                 return (
                     <Cube
                         {...block}
-                        x={block.x}
-                        y={block.y}
+                        x={block.x + (10 * (screenWidth - 1))}
+                        y={block.y + (10 * (screenWidth - 1))}
                         z={layer}
                         // update block color if robot lights correct block
                         type={block.type}
@@ -67,7 +71,7 @@ function Game() {
                 {renderedLevel.length > 0 ?
                     <>
                         {renderedLevel}
-                        <Robot {...robotLocation} />
+                        <Robot {...robotLocation} displace={screenWidth !== 1} />
                     </>
                     : <Text text="Level not found" />
                 }
@@ -75,7 +79,7 @@ function Game() {
         )
     }
     const YgridHeight = 2 * blockSize;
-    const memoizedLevel = useMemo(renderLevel, [robotLocation, levelData])
+    const memoizedLevel = useMemo(renderLevel, [robotLocation, levelData, offsetX, modal])
     const [activeGridLayer, setActiveGridLayer] = useState(0)
     // create Grid Layers for block placement
     const createGridLayer = ({ rows, cols, title, position }) => {
@@ -134,9 +138,9 @@ function Game() {
             </Layer>
         )
     }
-    const memoizedMainGrid = useMemo(() => createGridLayer({ rows: 3, cols: 4, title: "Main", position: 0 }), [activeGridLayer])
+    const memoizedMainGrid = useMemo(() => createGridLayer({ rows: 3, cols: 4, title: "Main", position: 0 }), [activeGridLayer, offsetX])
 
-    const memoizedFuncGrid = useMemo(() => createGridLayer({ rows: 2, cols: 4, title: "Function 1", position: 1 }), [activeGridLayer])
+    const memoizedFuncGrid = useMemo(() => createGridLayer({ rows: 2, cols: 4, title: "Function 1", position: 1 }), [activeGridLayer, offsetX])
     const [mainBlocks, setMainBlocks] = useState([])
     const [func1Blocks, setFunc1Blocks] = useState([])
     // block related
@@ -239,7 +243,7 @@ function Game() {
                     {move === 'f2' && <Text
                         fontSize={35}
                         onClick={e => createNewBlock(e, move)}
-                        x={blockSize * index + 15}
+                        x={(screenWidth - 1) + blockSize * index + 15}
                         y={Y_Block_selectOffsetRename + 20}
                         text={'F2'}
                     />}
@@ -256,7 +260,7 @@ function Game() {
             </Layer>
         )
     }
-    const memoizedMoveSelection = useMemo(() => createMoveSelection(!!foundLevel ? foundLevel.available_moves : []), [sectionName, levelID, activeGridLayer])
+    const memoizedMoveSelection = useMemo(() => createMoveSelection(!!foundLevel ? foundLevel.available_moves : []), [sectionName, levelID, activeGridLayer, offsetX, screenWidth])
     // drag block related
     // const updateBlockLocation = (e, id, newX, newY) => {
     //     const [items, item, index] = findBlock(e, id)
@@ -753,6 +757,7 @@ function Game() {
                             />
                         </Layer>
                     </Stage>
+                    {/* TODO: fix this modal button from popping up */}
                     <Modal modal={modal} toggle={toggleModal} redo={redo} levelInfo={foundLevel} />
                 </>
                 : <Redirect to='/' />}
