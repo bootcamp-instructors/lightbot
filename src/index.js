@@ -5,7 +5,7 @@ import './index.css'
 import { AppProvider } from './utilities/AppContext'
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/js/bootstrap.js';
+// import 'bootstrap/dist/js/bootstrap.js';
 
 ReactDOM.render(
   <AppProvider>

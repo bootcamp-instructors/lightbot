@@ -8,12 +8,11 @@ import Navbar from './Navbar'
 import Footer from './Footer'
 
 function App() {
-
   return (
     <div className="App">
       <Router>
         <Navbar />
-        <Container>
+        <Container fluid>
           <Switch>
             <Route path="/sections">
               <Sections />

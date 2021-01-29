@@ -20,14 +20,16 @@ import { useAppContext } from '../utilities/AppContext'
 function Game() {
     const { screenWidth } = useAppContext()
     // TODO: check context to see if level completed already
+    // if level complete, show "next level" button in navbar
     const [width, height] = useWindowSize()
 
     const offsetX = (width * screenWidth) - 480;
     const offsetY = 20;
+
     // TODO: abstract each component to a new file
     // modal related
     const [modal, setModal] = useState(false);
-    const toggleModal = () => setModal(!modal);
+    const toggleModal = () => setModal(prev => !modal);
 
     const { sectionName, levelID } = useParams()
     const section = sections.find(section => section.name === sectionName)
@@ -37,18 +39,29 @@ function Game() {
     const legalLevel = !!section && !!foundLevel
     const [levelData, setLevelData] = useState(!!foundLevel ? foundLevel.level_data : [])
     const resetLevel = () => setLevelData(p => {
+
         // TODO: bug - on reset game, the colors dont go back to blue for the light tiles
         // TODO: bug - on redo or continue in modal, the board does not re render and the blocks stay in the code pen
+        console.log('resetting level')
         const correctData = !!foundLevel ? foundLevel.level_data : []
-        return [...correctData]
+        let newLevelData = [...correctData]
+        for (let item of newLevelData) {
+            item.powered = false
+        }
+        return [...newLevelData]
     })
     const [robotLocation, setRobotLocation] = useState(!!foundLevel ? foundLevel.renderRobot : {})
 
     const resetRobot = () => setRobotLocation(!!foundLevel ? foundLevel.renderRobot : {})
+    useEffect(() => {
+        resetLevel()
+        resetRobot()
+    }, [sectionName, levelID])
     const [timeInterval, setTimeInterval] = useState(500)
     const updateTimeInterval = () => setTimeInterval(pTime => pTime === 500 ? 250 : 500)
     // create Level layers for robot
     const renderLevel = () => {
+        console.log("rerendering level:", levelData)
         const renderedLevel = levelData.map((block, index) => {
             return Array(block.z).fill().map((item, layer) => {
                 return (
@@ -79,8 +92,8 @@ function Game() {
         )
     }
     const YgridHeight = 2 * blockSize;
-    const memoizedLevel = useMemo(renderLevel, [robotLocation, levelData, offsetX, modal])
     const [activeGridLayer, setActiveGridLayer] = useState(0)
+    const memoizedLevel = useMemo(renderLevel, [robotLocation, levelData, sectionName, levelID, activeGridLayer, offsetX, screenWidth])
     // create Grid Layers for block placement
     const createGridLayer = ({ rows, cols, title, position }) => {
         const mainBlockPlacementGridLines_Horizontal = [];
@@ -147,7 +160,6 @@ function Game() {
     const createNewBlock = (e, blockType) => {
         resetRobot()
         resetLevel()
-        // TODO: broken, need to fix this
         if (activeGridLayer === 0) {
             setMainBlocks(prevMainBlocks => {
                 if (prevMainBlocks.length >= 12) {
@@ -174,7 +186,6 @@ function Game() {
                     console.log('block not allowed')
                     return prevFunc1Blocks
                 }
-
                 // calculate location for next block
                 const id = uuidv4()
                 const i = (prevFunc1Blocks.length % 4)
@@ -208,42 +219,42 @@ function Game() {
                     // handleDragStart={e=>createNewBlockInMotion(e, block)}
                     // handleDragEnd={e=>handleDragEnd(e,)}
                     />
-                    {move === 'forward' && <ForwardBlock
+                    {move === moveTypes[0] && <ForwardBlock
                         clickFunc={e => createNewBlock(e, move)}
                         x={blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
-                    {move === 'left' && <LeftBlock
+                    {move === moveTypes[1] && <LightBlock
                         clickFunc={e => createNewBlock(e, move)}
                         x={blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
-                    {move === 'right' && <RightBlock
+                    {move === moveTypes[2] && <LeftBlock
                         clickFunc={e => createNewBlock(e, move)}
                         x={blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
-                    {move === 'light' && <LightBlock
+                    {move === moveTypes[3] && <RightBlock
                         clickFunc={e => createNewBlock(e, move)}
                         x={blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
-                    {move === 'jump' && <SpringBlock
+                    {move === moveTypes[4] && <SpringBlock
                         clickFunc={e => createNewBlock(e, move)}
                         x={blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
-                    {move === 'f1' && <Text
+                    {move === moveTypes[5] && <Text
                         fontSize={35}
                         onClick={e => createNewBlock(e, move)}
                         x={blockSize * index + 15}
                         y={Y_Block_selectOffsetRename + 20}
                         text={'F1'}
                     />}
-                    {move === 'f2' && <Text
+                    {move === moveTypes[6] && <Text
                         fontSize={35}
                         onClick={e => createNewBlock(e, move)}
-                        x={(screenWidth - 1) + blockSize * index + 15}
+                        x={blockSize * index + 15}
                         y={Y_Block_selectOffsetRename + 20}
                         text={'F2'}
                     />}
@@ -427,13 +438,7 @@ function Game() {
             })
         }
     }
-    // board related
-    const resetBoard = (e) => {
-        resetRobot()
-        resetLevel()
-        setMainBlocks(prev => [])
-        setFunc1Blocks(prev => [])
-    }
+
     // board related
     const undoMove = (e) => {
         resetRobot()
@@ -485,52 +490,18 @@ function Game() {
         }
         return false
     }
-    const redo = (e) => {
+    // board related
+    const resetBoard = (e) => {
+        console.log('running resetBoard function')
         resetRobot()
+        resetLevel()
         setMainBlocks(prev => [])
         setFunc1Blocks(prev => [])
-        resetLevel()
-        toggleModal()
     }
     // robot related
     const updateRobotlocation = (block) => {
-        // TODO: finish this code
         setRobotLocation(prevLocation => {
             let currRobot = { ...prevLocation }//{ y 0, y: 0, z: 1, angle: 0 }
-            // on turn, update angle to face right
-            if (block.blockType === moveTypes[3]) {
-                switch (currRobot.angle) {
-                    case 0:
-                        currRobot.angle = 120
-                        break
-                    case 120:
-                        currRobot.angle = 180
-                        break
-                    case 180:
-                        currRobot.angle = 300
-                        break
-                    case 300:
-                        currRobot.angle = 0
-                        break
-                }
-            }
-            // on turn, update angle to face left
-            if (block.blockType === moveTypes[2]) {
-                switch (currRobot.angle) {
-                    case 0:
-                        currRobot.angle = 300
-                        break
-                    case 120:
-                        currRobot.angle = 0
-                        break
-                    case 180:
-                        currRobot.angle = 120
-                        break
-                    case 300:
-                        currRobot.angle = 180
-                        break
-                }
-            }
             // on forward, update x or y based on angle
             if (block.blockType === moveTypes[0]) {
                 // check if robot can indeed move forward here
@@ -547,10 +518,58 @@ function Game() {
                     currRobot.y++
                 }
             }
+            // on light, toggle powered value
+            if (block.blockType === moveTypes[1]) {
+
+                let index = isLightable({ x: currRobot.x, y: currRobot.y, z: currRobot.z })
+                if (index >= 0) {
+                    setLevelData(prevLevelData => {
+                        let newLevelData = [...prevLevelData]
+                        console.log("setting light:", newLevelData[index].powered)
+                        newLevelData[index].powered = !newLevelData[index].powered
+                        console.log("set light:", newLevelData[index].powered)
+                        return newLevelData
+                    })
+                }
+            }
+            // on left turn, update angle to face left
+            if (block.blockType === moveTypes[2]) {
+                switch (currRobot.angle) {
+                    case 0:
+                        currRobot.angle = 300
+                        break
+                    case 120:
+                        currRobot.angle = 0
+                        break
+                    case 180:
+                        currRobot.angle = 120
+                        break
+                    case 300:
+                        currRobot.angle = 180
+                        break
+                }
+            }
+            // on right turn, update angle to face right
+            if (block.blockType === moveTypes[3]) {
+                switch (currRobot.angle) {
+                    case 0:
+                        currRobot.angle = 120
+                        break
+                    case 120:
+                        currRobot.angle = 180
+                        break
+                    case 180:
+                        currRobot.angle = 300
+                        break
+                    case 300:
+                        currRobot.angle = 0
+                        break
+                }
+            }
             // on jump, update z and x or y based on angle and jumpable location
             if (block.blockType === moveTypes[4]) {
-                // check if robot can indeed move forward and jump up or down here
-
+                // check if robot can indeed move forward and jump up or down here,
+                // TODO: robot can jump up one block only, but jump down many
                 if (currRobot.angle === 0) {
                     let jump = canJump({ x: currRobot.x + 1, y: currRobot.y, z: currRobot.z })
                     if (jump !== 0) {
@@ -580,17 +599,6 @@ function Game() {
                     }
                 }
             }
-            // on light, toggle powered value
-            if (block.blockType === moveTypes[1]) {
-                let index = isLightable({ x: currRobot.x, y: currRobot.y, z: currRobot.z })
-                if (index >= 0) {
-                    setLevelData(prevLevelData => {
-                        let newLevelData = [...prevLevelData]
-                        newLevelData[index].powered = !newLevelData[index].powered
-                        return newLevelData
-                    })
-                }
-            }
             return currRobot
         })
     }
@@ -618,7 +626,7 @@ function Game() {
             let j = 0
             let checkingFunc1Code = setInterval(() => {
                 if (func1Blocks.length > 0 && j < func1Blocks.length) {
-                    if (func1Blocks[j].blockType === 'f1') {
+                    if (func1Blocks[j].blockType === moveTypes[5]) {
                         runFunc1Code()
                     }
                     else {
@@ -642,11 +650,11 @@ function Game() {
         let checkingMainCode = setInterval(() => {
             console.log(i)
             if (mainBlocks.length > 0 && i < mainBlocks.length) {
-                if (mainBlocks[i].blockType === 'f1' && !runningFunc1) {
+                if (mainBlocks[i].blockType === moveTypes[5] && !runningFunc1) {
                     runningFunc1 = true
                     runFunc1Code()
                 }
-                else if (mainBlocks[i].blockType !== 'f1') {
+                else if (mainBlocks[i].blockType !== moveTypes[5]) {
                     updateRobotlocation(mainBlocks[i])
                     i++
                 }
@@ -661,7 +669,7 @@ function Game() {
         }, timeInterval)
     }
     return (
-        <div className="p-2">
+        <div className="p-2" style={{ height: "100px" }}>
             {legalLevel ?
                 <>
                     <Stage width={width - 200} height={height - 100}>
@@ -757,8 +765,7 @@ function Game() {
                             />
                         </Layer>
                     </Stage>
-                    {/* TODO: fix this modal button from popping up */}
-                    <Modal modal={modal} toggle={toggleModal} redo={redo} levelInfo={foundLevel} />
+                    <Modal modal={modal} toggle={toggleModal} redo={resetBoard} levelInfo={foundLevel} />
                 </>
                 : <Redirect to='/' />}
         </div>

@@ -25,6 +25,8 @@ function Example() {
     }
     let inLevel = false
 
+    // TODO: if current level page has been completed, render "next level" button here
+
     return (
         <Navbar color="light" light expand="md">
             <Container fluid>

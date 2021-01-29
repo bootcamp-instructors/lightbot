@@ -43,6 +43,7 @@ export default function RightBlock({ x, y, clickFunc }) {
                 fill="black"
                 closed
             />
+            {/* TODO: make this a circle instead */}
             <Line
                 onClick={clickFunc}
                 lineJoin={'round'}

@@ -13,20 +13,22 @@ export const AppProvider = ({ children }) => {
 export const useAppContext = () => useContext(AppContext);
 
 function AppHelper() {
-    const message = "got context working"
     const [screenWidth, setScreenWidth] = useState(1)
+
     const [userData, setUserData] = useState({})
     useEffect(() => {
-        // TODO: get localstorage data
-        // setUserData()
+        const lsData = JSON.parse(window.localStorage.getItem("lightbotdata"))
+        if (lsData) {
+            setUserData(prev => lsData)
+        }
     }, [])
+
     const updateUserData = data => {
-        // TODO: set localstorage data and state
-        // setUserData()
+        setUserData(prev => { return { ...data } })
+        window.localStorage.setItem("lightbotdata", JSON.stringify(data))
     }
 
     return {
-        message,
         screenWidth,
         setScreenWidth,
         userData,
