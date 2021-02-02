@@ -16,9 +16,13 @@ import RightBlock from './sprites/RightBlock'
 import LightBlock from './sprites/LightBlock'
 import SpringBlock from './sprites/SpringBlock'
 import { useAppContext } from '../utilities/AppContext'
+import FastForwardBlock from './sprites/FastForwardBlock'
+import PlayBlock from './sprites/PlayBlock'
+import UndoBlock from './sprites/UndoBlock'
+import TrashBlock from './sprites/TrashBlock'
 
 function Game() {
-    const { screenWidth } = useAppContext()
+    const { screenWidth, userData, updateUserData } = useAppContext()
     // TODO: check context to see if level completed already
     // if level complete, show "next level" button in navbar
     const [width, height] = useWindowSize()
@@ -39,9 +43,6 @@ function Game() {
     const legalLevel = !!section && !!foundLevel
     const [levelData, setLevelData] = useState(!!foundLevel ? foundLevel.level_data : [])
     const resetLevel = () => setLevelData(p => {
-
-        // TODO: bug - on reset game, the colors dont go back to blue for the light tiles
-        // TODO: bug - on redo or continue in modal, the board does not re render and the blocks stay in the code pen
         console.log('resetting level')
         const correctData = !!foundLevel ? foundLevel.level_data : []
         let newLevelData = [...correctData]
@@ -359,18 +360,26 @@ function Game() {
     const deleteSelf = (e, id) => {
         resetRobot()
         resetLevel()
-        organizeBoard(e, id)
-        if (activeGridLayer === 0) {
-            setMainBlocks(prevBlocks => prevBlocks.filter(obj => obj.id !== id))
-        }
-        else if (activeGridLayer === 1) {
-            setFunc1Blocks(prevBlocks => prevBlocks.filter(obj => obj.id !== id))
-        }
+        // find current block active grid layer and set the grid layer
+        setActiveGridLayer(p => {
+            if (!!mainBlocks.find(obj => obj.id === id)) {
+                const currentGridLayer = 0
+                organizeBoard(e, id, currentGridLayer)
+                setMainBlocks(prevBlocks => prevBlocks.filter(obj => obj.id !== id))
+                return currentGridLayer
+            }
+            else if (func1Blocks.find(obj => obj.id === id)) {
+                const currentGridLayer = 1
+                organizeBoard(e, id, currentGridLayer)
+                setFunc1Blocks(prevBlocks => prevBlocks.filter(obj => obj.id !== id))
+                return currentGridLayer
+            }
+        })
     }
     // board related
-    const organizeBoard = (e, id) => {
+    const organizeBoard = (e, id, currentGridLayer) => {
         // confirm all blocks fit in screen correctly
-        if (activeGridLayer === 0) {
+        if (currentGridLayer === 0) {
             setMainBlocks(prevBlocks => {
                 const currentBlock = prevBlocks.find(b => b.id === id)
                 let newBlockArray = []
@@ -404,7 +413,7 @@ function Game() {
 
             })
         }
-        else if (activeGridLayer === 1) {
+        else if (currentGridLayer === 1) {
             setFunc1Blocks(prevBlocks => {
                 const currentBlock = prevBlocks.find(b => b.id === id)
                 let newBlockArray = []
@@ -611,9 +620,10 @@ function Game() {
             }
         }
         // if we arrived here, the player has solved the level
-        // pop up modal, telling user that the player has successfully completed the level, to move on to the next level or to redo level
+        // add current level completion to userdata
+        updateUserData(foundLevel)
         toggleModal()
-        // ask the user if they can refactor their solution to use less blocks if they used more than min needed
+        // TODO: ask the user if they can refactor their solution to use less blocks if they used more than min needed
         return true
     }
     // board related
@@ -710,28 +720,29 @@ function Game() {
                                 width={blockSize}
                                 height={blockSize}
                                 fill="red"
+                                stroke={'black'}
                             />
-                            <Text
-                                onClick={resetBoard}
-                                fontSize={25}
+                            <TrashBlock
+                                clickFunc={runPlayerCode}
                                 x={blockSize * 0}
                                 y={450 - blockSize - 10}
-                                text={"reset"}
-                            />
+                                width={blockSize}
+                                height={blockSize} />
                             <Rect
                                 onClick={undoMove}
                                 x={blockSize * 1}
                                 y={450 - blockSize - 10}
                                 width={blockSize}
                                 height={blockSize}
-                                fill="yellow"
+                                fill={colors.lightGrey}
+                                stroke={'black'}
                             />
-                            <Text
-                                onClick={undoMove}
+                            <UndoBlock
+                                clickFunc={runPlayerCode}
                                 x={blockSize * 1}
                                 y={450 - blockSize - 10}
-                                fontSize={25}
-                                text={"undo"}
+                                width={blockSize}
+                                height={blockSize}
                             />
                             <Rect
                                 onClick={runPlayerCode}
@@ -739,30 +750,34 @@ function Game() {
                                 y={450 - blockSize - 10}
                                 width={blockSize}
                                 height={blockSize}
-                                fill="green"
+                                fill={colors.lightGrey}
+                                stroke={'black'}
                             />
-                            <Text
-                                onClick={runPlayerCode}
+                            <PlayBlock
+                                clickFunc={runPlayerCode}
                                 x={blockSize * 2}
                                 y={450 - blockSize - 10}
-                                fontSize={25}
-                                text={"run"}
+                                width={blockSize}
+                                height={blockSize}
                             />
                             <Rect
-                                onClick={updateTimeInterval}
+                                onClick={runPlayerCode}
                                 x={blockSize * 3}
                                 y={450 - blockSize - 10}
                                 width={blockSize}
                                 height={blockSize}
-                                fill="purple"
+                                fill={colors.lightGrey}
+                                stroke={'black'}
                             />
-                            <Text
-                                onClick={updateTimeInterval}
+                            <FastForwardBlock
+                                clickFunc={updateTimeInterval}
                                 x={blockSize * 3}
                                 y={450 - blockSize - 10}
-                                fontSize={25}
-                                text={timeInterval === 500 ? "fast" : "slow"}
+                                width={blockSize}
+                                height={blockSize}
+                                speed={timeInterval === 500 ? "fast" : "slow"}
                             />
+
                         </Layer>
                     </Stage>
                     <Modal modal={modal} toggle={toggleModal} redo={resetBoard} levelInfo={foundLevel} />

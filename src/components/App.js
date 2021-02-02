@@ -6,6 +6,7 @@ import Game from './Game'
 import Home from './Home'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import Success from './Success'
 
 function App() {
   return (
@@ -22,6 +23,9 @@ function App() {
             </Route>
             <Route path="/level/:sectionName/:levelID">
               <Game />
+            </Route>
+            <Route path="/success">
+              <Success />
             </Route>
             <Route exact path="/">
               <Home />

@@ -1,12 +1,25 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-    Row, Col, CardHeader, Card, CardTitle, CardBody
+    Row, Col, CardHeader, Card, CardTitle, CardBody, Button
 } from 'reactstrap'
 import { sections } from '../data/sectionData'
 import { useAppContext } from '../utilities/AppContext'
 
 function Sections() {
     const { userData } = useAppContext()
+    const [validSection, setValidSection] = useState(-1)
+    useEffect(() => {
+        console.log('in useEffect')
+        for (let i of userData) {
+            if (i.section_id > validSection) {
+                console.log(i.section_id)
+                setValidSection(p => {
+                    return i.section_id
+                })
+            }
+        }
+    }, [userData])
     return (
         <Row>
             {sections.map((section, index) => {
@@ -19,7 +32,11 @@ function Sections() {
                             <CardBody>
                                 <CardTitle tag="h5">{section.name}</CardTitle>
                                 {/* user progress */}
-                                <Link className="btn btn-primary" to={`/section/${section.name}`}>Start</Link>
+                                {
+                                    validSection + 1 >= section.id ?
+                                        <Link className="btn btn-primary" to={`/section/${section.name}`}>Start</Link>
+                                        : <Button disabled className="btn btn-primary">Unlock by completing the previous section</Button>
+                                }
                             </CardBody>
                         </Card>
                     </Col>

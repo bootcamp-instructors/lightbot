@@ -1,56 +1,61 @@
-import { Line, Circle } from 'react-konva'
+
+import { Line, Rect } from 'react-konva'
 import { blockSize, colors } from '../../data'
-export default function RightBlock({ x, y, clickFunc }) {
+
+export default function TrashBlock({ x, y, clickFunc }) {
     return (
         <>
             <Line
-                points={[x + 24, y + blockSize - 30, x + blockSize - 24, y + blockSize - 30]}
+                points={[x + (blockSize / 2) - 2, y + 10, x+ (blockSize / 2) + 2, y + 10]}
                 onClick={clickFunc}
                 lineJoin={'round'}
                 lineCap={'round'}
-                strokeWidth={6}
+                strokeWidth={8}
                 stroke="black"
                 fill="black"
                 closed
             />
             <Line
-                points={[x + 25, y + blockSize - 30, x + 25, y + blockSize - 10]}
+                points={[x + 20, y + 12, x + blockSize - 20, y + 12]}
                 onClick={clickFunc}
                 lineJoin={'round'}
                 lineCap={'round'}
-                strokeWidth={6}
+                strokeWidth={8}
                 stroke="black"
                 fill="black"
                 closed
             />
             <Line
-                points={[x + blockSize - 25, y + blockSize - 30, x + blockSize - 25, y + blockSize - 10]}
+                points={[x + 10, y + 20, x + 20, y + blockSize - 10]}
                 onClick={clickFunc}
                 lineJoin={'round'}
                 lineCap={'round'}
-                strokeWidth={6}
+                strokeWidth={8}
                 stroke="black"
                 fill="black"
                 closed
             />
             <Line
-                points={[x + 25, y + blockSize - 10, x + blockSize - 25, y + blockSize - 10]}
+                points={[x + blockSize - 10, y + 20, x + blockSize - 20, y + blockSize - 10]}
                 onClick={clickFunc}
                 lineJoin={'round'}
                 lineCap={'round'}
-                strokeWidth={6}
+                strokeWidth={8}
                 stroke="black"
                 fill="black"
                 closed
             />
-            <Circle
+            <Line
+                points={[x + 20, y + blockSize - 10, x + blockSize - 20, y + blockSize - 10]}
                 onClick={clickFunc}
-                x={x + (blockSize / 2)}
-                y={y + (blockSize / 2) - 10}
-                radius={blockSize / 4}
-                fill={colors.yellow}
+                lineJoin={'round'}
+                lineCap={'round'}
+                strokeWidth={8}
                 stroke="black"
-                strokeWidth={6} />
+                fill="black"
+                closed
+            />
         </>
     )
 }
+

@@ -15,7 +15,7 @@ export const useAppContext = () => useContext(AppContext);
 function AppHelper() {
     const [screenWidth, setScreenWidth] = useState(1)
 
-    const [userData, setUserData] = useState({})
+    const [userData, setUserData] = useState([])
     useEffect(() => {
         const lsData = JSON.parse(window.localStorage.getItem("lightbotdata"))
         if (lsData) {
@@ -23,9 +23,17 @@ function AppHelper() {
         }
     }, [])
 
-    const updateUserData = data => {
-        setUserData(prev => { return { ...data } })
-        window.localStorage.setItem("lightbotdata", JSON.stringify(data))
+    const updateUserData = completedLevelData => {
+        setUserData(prevUserData => {
+            let newData = [...prevUserData]
+            newData[completedLevelData.id] = {
+                level_id: completedLevelData.id,
+                section_id: completedLevelData.section_id,
+                completed: true
+            }
+            window.localStorage.setItem("lightbotdata", JSON.stringify(newData))
+            return newData
+        })
     }
 
     return {

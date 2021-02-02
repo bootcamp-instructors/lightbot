@@ -14,7 +14,7 @@ const ModalExample = ({ levelInfo, modal, toggle, redo, className }) => {
             let nextSection = sections.find(s => s.id === nextLevel.section_id)
             return `/level/${nextSection.name}/${nextLevel.level_id}`
         }
-        return "/"
+        return "/success"
     }
 
     const nextLevelAvaliable = nextLevelPath()
