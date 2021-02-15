@@ -72,10 +72,8 @@ function Game() {
                             x={block.x + (10 * (screenWidth - 1))}
                             y={block.y + (10 * (screenWidth - 1))}
                             z={layer}
-                            // update block color if robot lights correct block
                             type={block.type}
                         />
-                        {/* if this x y and z is the same as the robot, render robot here */}
                         {(robotLocation.x === block.x && robotLocation.y === block.y && robotLocation.z === block.z) ?
                             <Robot {...robotLocation} displace={screenWidth !== 1} /> : null}
                     </Fragment>
