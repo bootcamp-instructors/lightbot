@@ -10,7 +10,8 @@ export const levels = [
             { "x": -2, "y": 0, "z": 1, "type": blockTypes[0] },
             { "x": -1, "y": 0, "z": 1, "type": blockTypes[1], "powered": false }
         ],
-        "available_moves": [moveTypes[0], moveTypes[1]]
+        "available_moves": [moveTypes[0], moveTypes[1]],
+        "help": []
     },
     {
         "id": 1,
@@ -26,7 +27,8 @@ export const levels = [
             { "x": 0, "y": 1, "z": 1, "type": blockTypes[0] },
             { "x": 0, "y": 0, "z": 1, "type": blockTypes[0] }
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3]],
+        "help": []
     },
     {
         "id": 2,
@@ -39,31 +41,33 @@ export const levels = [
             { "x": -2, "y": 1, "z": 4, "type": blockTypes[1], "powered": false },
             { "x": -2, "y": 0, "z": 1, "type": blockTypes[0] },
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]],
+        "help": []
     },
     {
         "id": 3,
         "level_id": 4,
         "section_id": 0,
-        "renderRobot": { "x": -3, "y": -2, "z": 1, "angle": 0 },
+        "renderRobot": { "x": -2, "y": -2, "z": 1, "angle": 0 },
         "level_data": [
-            { "x": -3, "y": 2, "z": 3, "type": blockTypes[0] },
             { "x": -2, "y": 2, "z": 3, "type": blockTypes[0] },
-            { "x": -1, "y": 2, "z": 3, "type": blockTypes[1], "powered": false },
-            { "x": -3, "y": 1, "z": 2, "type": blockTypes[0] },
+            { "x": -1, "y": 2, "z": 3, "type": blockTypes[0] },
+            { "x": 0, "y": 2, "z": 3, "type": blockTypes[1], "powered": false },
             { "x": -2, "y": 1, "z": 2, "type": blockTypes[0] },
             { "x": -1, "y": 1, "z": 2, "type": blockTypes[0] },
-            { "x": -3, "y": 0, "z": 1, "type": blockTypes[0] },
+            { "x": 0, "y": 1, "z": 2, "type": blockTypes[0] },
             { "x": -2, "y": 0, "z": 1, "type": blockTypes[0] },
             { "x": -1, "y": 0, "z": 1, "type": blockTypes[0] },
-            { "x": -3, "y": -1, "z": 2, "type": blockTypes[0] },
+            { "x": 0, "y": 0, "z": 1, "type": blockTypes[0] },
             { "x": -2, "y": -1, "z": 2, "type": blockTypes[0] },
             { "x": -1, "y": -1, "z": 2, "type": blockTypes[0] },
-            { "x": -3, "y": -2, "z": 1, "type": blockTypes[0] },
+            { "x": 0, "y": -1, "z": 2, "type": blockTypes[0] },
             { "x": -2, "y": -2, "z": 1, "type": blockTypes[0] },
             { "x": -1, "y": -2, "z": 1, "type": blockTypes[0] },
+            { "x": 0, "y": -2, "z": 1, "type": blockTypes[0] },
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]],
+        "help": []
     },
     {
         "id": 4,
@@ -81,7 +85,8 @@ export const levels = [
             { "x": -1, "y": 0, "z": 1, "type": blockTypes[0] },
             { "x": 0, "y": 0, "z": 1, "type": blockTypes[1], "powered": false },
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]],
+        "help": ["Don't forget to light all the blocks!"]
     },
     {
         "id": 5,
@@ -105,7 +110,8 @@ export const levels = [
             { "x": -2, "y": -2, "z": 1, "type": blockTypes[0] },
             { "x": -1, "y": -2, "z": 1, "type": blockTypes[0] },
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4]],
+        "help": []
     },
     {
         "id": 6,
@@ -124,7 +130,8 @@ export const levels = [
             { "x": 0, "y": -1, "z": 1, "type": blockTypes[0] },
             { "x": 1, "y": -1, "z": 1, "type": blockTypes[1], "powered": false },
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4], moveTypes[5]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4], moveTypes[5]],
+        "help": []
     },
     {
         "id": 7,
@@ -142,6 +149,7 @@ export const levels = [
             { "x": -1, "y": -3, "z": 1, "type": blockTypes[0] },
             { "x": 0, "y": -3, "z": 1, "type": blockTypes[0] },
         ],
-        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4], moveTypes[5]]
+        "available_moves": [moveTypes[0], moveTypes[1], moveTypes[2], moveTypes[3], moveTypes[4], moveTypes[5]],
+        "help": []
     },
 ]

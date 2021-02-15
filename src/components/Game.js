@@ -26,10 +26,8 @@ function Game() {
     // TODO: check context to see if level completed already
     // if level complete, show "next level" button in navbar
     const [width, height] = useWindowSize()
-
     const offsetX = 600;
     const offsetY = 20;
-
     // TODO: abstract each component to a new file
     // modal related
     const [modal, setModal] = useState(false);
@@ -205,7 +203,7 @@ function Game() {
                 <Fragment key={index}>
                     <Rect
                         onClick={e => createNewBlock(e, move)}
-                        x={blockSize * index}
+                        x={10 + blockSize * index}
                         y={Y_Block_selectOffsetRename}
                         width={blockSize}
                         height={blockSize}
@@ -217,40 +215,40 @@ function Game() {
                     />
                     {move === moveTypes[0] && <ForwardBlock
                         clickFunc={e => createNewBlock(e, move)}
-                        x={blockSize * index}
+                        x={10 + blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
                     {move === moveTypes[1] && <LightBlock
                         clickFunc={e => createNewBlock(e, move)}
-                        x={blockSize * index}
+                        x={10 + blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
                     {move === moveTypes[2] && <LeftBlock
                         clickFunc={e => createNewBlock(e, move)}
-                        x={blockSize * index}
+                        x={10 + blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
                     {move === moveTypes[3] && <RightBlock
                         clickFunc={e => createNewBlock(e, move)}
-                        x={blockSize * index}
+                        x={10 + blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
                     {move === moveTypes[4] && <SpringBlock
                         clickFunc={e => createNewBlock(e, move)}
-                        x={blockSize * index}
+                        x={10 + blockSize * index}
                         y={Y_Block_selectOffsetRename}
                     />}
                     {move === moveTypes[5] && <Text
                         fontSize={35}
                         onClick={e => createNewBlock(e, move)}
-                        x={blockSize * index + 15}
+                        x={10 + blockSize * index + 15}
                         y={Y_Block_selectOffsetRename + 20}
                         text={'F1'}
                     />}
                     {move === moveTypes[6] && <Text
                         fontSize={35}
                         onClick={e => createNewBlock(e, move)}
-                        x={blockSize * index + 15}
+                        x={10 + blockSize * index + 15}
                         y={Y_Block_selectOffsetRename + 20}
                         text={'F2'}
                     />}
@@ -710,8 +708,8 @@ function Game() {
                             )}
                             <Rect
                                 onClick={resetBoard}
-                                x={blockSize * 0}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 0}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
                                 fill="red"
@@ -719,55 +717,55 @@ function Game() {
                             />
                             <TrashBlock
                                 clickFunc={runPlayerCode}
-                                x={blockSize * 0}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 0}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize} />
                             <Rect
                                 onClick={undoMove}
-                                x={blockSize * 1}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 1}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
-                                fill={colors.lightGrey}
+                                fill={colors.white}
                                 stroke={'black'}
                             />
                             <UndoBlock
                                 clickFunc={runPlayerCode}
-                                x={blockSize * 1}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 1}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
                             />
                             <Rect
                                 onClick={runPlayerCode}
-                                x={blockSize * 2}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 2}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
-                                fill={colors.lightGrey}
+                                fill={colors.white}
                                 stroke={'black'}
                             />
                             <PlayBlock
                                 clickFunc={runPlayerCode}
-                                x={blockSize * 2}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 2}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
                             />
                             <Rect
                                 onClick={runPlayerCode}
-                                x={blockSize * 3}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 3}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
-                                fill={colors.lightGrey}
+                                fill={colors.white}
                                 stroke={'black'}
                             />
                             <FastForwardBlock
                                 clickFunc={updateTimeInterval}
-                                x={blockSize * 3}
-                                y={450 - blockSize - 10}
+                                x={10 + blockSize * 3}
+                                y={1}
                                 width={blockSize}
                                 height={blockSize}
                                 speed={timeInterval === 500 ? "fast" : "slow"}
@@ -776,10 +774,10 @@ function Game() {
                         </Layer>
                     </Stage>
                     <Modal modal={modal} toggle={toggleModal} redo={resetBoard} levelInfo={foundLevel} />
+                    {/* Add help modal here, that can be toggled */}
                 </>
                 : <Redirect to='/' />}
         </div>
     )
 }
-
 export default Game
