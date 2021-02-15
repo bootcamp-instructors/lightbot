@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-    Row, Col, CardHeader, Card, CardTitle, CardBody, Button
+    Row, Col, CardHeader, Card, CardTitle, CardBody, Button, Progress
 } from 'reactstrap'
 import { sections } from '../data/sectionData'
 import { useAppContext } from '../utilities/AppContext'
@@ -37,6 +37,8 @@ function Sections() {
                                         <Link className="btn btn-primary" to={`/section/${section.name}`}>Start</Link>
                                         : <Button disabled className="btn btn-primary">Unlock by completing the previous section</Button>
                                 }
+                                {/* TODO: add progress bars */}
+                                {/* <Progress value={validSection}>1/2</Progress> */}
                             </CardBody>
                         </Card>
                     </Col>

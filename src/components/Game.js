@@ -66,29 +66,26 @@ function Game() {
         const renderedLevel = levelData.map((block, index) => {
             return Array(block.z).fill().map((item, layer) => {
                 return (
-                    <Cube
-                        {...block}
-                        x={block.x + (10 * (screenWidth - 1))}
-                        y={block.y + (10 * (screenWidth - 1))}
-                        z={layer}
-                        // update block color if robot lights correct block
-                        type={block.type}
-
-                        key={`${index}-${layer}`}
-                    />
+                    <Fragment key={`${index}-${layer}`}>
+                        <Cube
+                            {...block}
+                            x={block.x + (10 * (screenWidth - 1))}
+                            y={block.y + (10 * (screenWidth - 1))}
+                            z={layer}
+                            // update block color if robot lights correct block
+                            type={block.type}
+                        />
+                        {/* if this x y and z is the same as the robot, render robot here */}
+                        {(robotLocation.x === block.x && robotLocation.y === block.y && robotLocation.z === block.z) ?
+                            <Robot {...robotLocation} displace={screenWidth !== 1} /> : null}
+                    </Fragment>
                 )
             })
         })
         return (
             <Layer>
                 {/* robot level layer */}
-                {renderedLevel.length > 0 ?
-                    <>
-                        {renderedLevel}
-                        <Robot {...robotLocation} displace={screenWidth !== 1} />
-                    </>
-                    : <Text text="Level not found" />
-                }
+                {renderedLevel.length > 0 ? renderedLevel : <Text text="Level not found" />}
             </Layer>
         )
     }
