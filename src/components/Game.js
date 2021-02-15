@@ -27,7 +27,7 @@ function Game() {
     // if level complete, show "next level" button in navbar
     const [width, height] = useWindowSize()
 
-    const offsetX = (width * screenWidth) - 480;
+    const offsetX = 600;
     const offsetY = 20;
 
     // TODO: abstract each component to a new file
